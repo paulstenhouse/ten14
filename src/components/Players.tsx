@@ -20,14 +20,14 @@ export default function Players({ homeTeam, awayTeam }: PlayersProps) {
   const players: Player[] = [
     // Home team offense (blue)
     { name: 'MAHOMES', number: 15, position: 'QB', x: -5, z: 0, team: 'home' },
-    { name: 'KELCE', number: 87, position: 'TE', x: -7, z: 2, team: 'home' },
+    { name: 'KELCE', number: 87, position: 'TE', x: -7, z: 3.5, team: 'home' },
     { name: 'HILL', number: 10, position: 'WR', x: -7, z: 8, team: 'home' },
     { name: 'HUNT', number: 27, position: 'RB', x: -8, z: -1, team: 'home' },
-    { name: 'BROWN', number: 77, position: 'LT', x: -7, z: -2, team: 'home' },
-    { name: 'SMITH', number: 65, position: 'LG', x: -7, z: -1, team: 'home' },
+    { name: 'BROWN', number: 77, position: 'LT', x: -7, z: -2.5, team: 'home' },
+    { name: 'SMITH', number: 65, position: 'LG', x: -7, z: -1.25, team: 'home' },
     { name: 'CREED', number: 52, position: 'C', x: -7, z: 0, team: 'home' },
-    { name: 'THUNEY', number: 62, position: 'RG', x: -7, z: 1, team: 'home' },
-    { name: 'WYLIE', number: 76, position: 'RT', x: -7, z: 2, team: 'home' },
+    { name: 'THUNEY', number: 62, position: 'RG', x: -7, z: 1.25, team: 'home' },
+    { name: 'WYLIE', number: 76, position: 'RT', x: -7, z: 2.5, team: 'home' },
     { name: 'HARDMAN', number: 17, position: 'WR', x: -7, z: -8, team: 'home' },
     { name: 'VALDES', number: 84, position: 'WR', x: -7, z: 6, team: 'home' },
 

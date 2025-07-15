@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import {
   YARD_TO_METER,
   HASH_WIDTH,
@@ -8,7 +9,7 @@ import {
 
 export default function HashMarks() {
   const hashMarks = []
-  const hashHeight = 0.12 // Above the field surface and lines
+  const hashHeight = 0.13 // Just above the field lines
 
   // Hash marks every yard from goal line to goal line
   for (let yard = -50; yard <= 50; yard++) {
@@ -18,17 +19,17 @@ export default function HashMarks() {
 
     // Left hash marks
     hashMarks.push(
-      <mesh key={`hash-left-${yard}`} position={[xPos, hashHeight, INBOUND_DISTANCE]} castShadow>
-        <boxGeometry args={[HASH_WIDTH, hashHeight, HASH_LENGTH]} />
-        <meshBasicMaterial color={LINE_WHITE} transparent opacity={0.3} />
+      <mesh key={`hash-left-${yard}`} position={[xPos, hashHeight, INBOUND_DISTANCE]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[HASH_WIDTH, HASH_LENGTH]} />
+        <meshBasicMaterial color={LINE_WHITE} transparent opacity={0.5} side={THREE.DoubleSide} />
       </mesh>,
     )
 
     // Right hash marks
     hashMarks.push(
-      <mesh key={`hash-right-${yard}`} position={[xPos, hashHeight, -INBOUND_DISTANCE]} castShadow>
-        <boxGeometry args={[HASH_WIDTH, hashHeight, HASH_LENGTH]} />
-        <meshBasicMaterial color={LINE_WHITE} transparent opacity={0.3} />
+      <mesh key={`hash-right-${yard}`} position={[xPos, hashHeight, -INBOUND_DISTANCE]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[HASH_WIDTH, HASH_LENGTH]} />
+        <meshBasicMaterial color={LINE_WHITE} transparent opacity={0.5} side={THREE.DoubleSide} />
       </mesh>,
     )
   }

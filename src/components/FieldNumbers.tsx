@@ -1,4 +1,5 @@
 import { Text } from '@react-three/drei'
+import * as THREE from 'three'
 import {
   YARD_TO_METER,
   FIELD_WIDTH,
@@ -9,7 +10,7 @@ import {
 
 export default function FieldNumbers() {
   const numbers = []
-  const numberHeight = 0.5 // Higher above the field to avoid z-fighting
+  const numberHeight = 0.15 // Raised to ensure visibility above field surface
   const fontSize = 6 * FOOT_TO_METER // 6 feet tall numbers
   
   // Distance from sideline (12 feet per NFL specs)
@@ -82,63 +83,79 @@ export default function FieldNumbers() {
     }
   }
 
-  // Add directional arrows
-  const arrowSize = 36 * INCH_TO_METER
+  // Add directional arrows as flat 2D shapes
+  const arrowLength = 36 * INCH_TO_METER
   const arrowWidth = 18 * INCH_TO_METER
   const arrowOffset = 15 * INCH_TO_METER // 15 inches below top of number
   
+  // Create arrow shape
+  const createArrowShape = () => {
+    const shape = new THREE.Shape()
+    shape.moveTo(0, 0)
+    shape.lineTo(-arrowWidth/2, -arrowLength/2)
+    shape.lineTo(-arrowWidth/4, -arrowLength/2)
+    shape.lineTo(-arrowWidth/4, -arrowLength)
+    shape.lineTo(arrowWidth/4, -arrowLength)
+    shape.lineTo(arrowWidth/4, -arrowLength/2)
+    shape.lineTo(arrowWidth/2, -arrowLength/2)
+    shape.closePath()
+    return shape
+  }
+  
+  const arrowShape = createArrowShape()
+  
   for (let yard = 10; yard <= 40; yard += 10) {
-    // Left side arrows pointing right
+    // Left side (negative X) - arrows point LEFT toward the nearest goal line (at x = -60)
     const leftXPos = (yard - 50) * YARD_TO_METER
     
-    // Top left arrow
+    // Top left arrow - points left
     numbers.push(
       <mesh
         key={`arrow-left-top-${yard}`}
         position={[leftXPos, numberHeight, numberDistance - fontSize/2 - arrowOffset]}
-        rotation={[-Math.PI / 2, 0, 0]}
+        rotation={[-Math.PI / 2, 0, Math.PI / 2]}
       >
-        <coneGeometry args={[arrowWidth/2, arrowSize, 3]} />
-        <meshBasicMaterial color={LINE_WHITE} />
+        <shapeGeometry args={[arrowShape]} />
+        <meshBasicMaterial color={LINE_WHITE} depthTest={false} />
       </mesh>
     )
     
-    // Bottom left arrow
+    // Bottom left arrow - points left
     numbers.push(
       <mesh
         key={`arrow-left-bottom-${yard}`}
         position={[leftXPos, numberHeight, -numberDistance + fontSize/2 + arrowOffset]}
-        rotation={[-Math.PI / 2, 0, Math.PI]}
+        rotation={[-Math.PI / 2, 0, Math.PI / 2]}
       >
-        <coneGeometry args={[arrowWidth/2, arrowSize, 3]} />
-        <meshBasicMaterial color={LINE_WHITE} />
+        <shapeGeometry args={[arrowShape]} />
+        <meshBasicMaterial color={LINE_WHITE} depthTest={false} />
       </mesh>
     )
 
-    // Right side arrows pointing left
+    // Right side (positive X) - arrows point RIGHT toward the nearest goal line (at x = 60)
     const rightXPos = (50 - yard) * YARD_TO_METER
     
-    // Top right arrow
+    // Top right arrow - points right
     numbers.push(
       <mesh
         key={`arrow-right-top-${yard}`}
         position={[rightXPos, numberHeight, numberDistance - fontSize/2 - arrowOffset]}
-        rotation={[-Math.PI / 2, 0, Math.PI]}
+        rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
       >
-        <coneGeometry args={[arrowWidth/2, arrowSize, 3]} />
-        <meshBasicMaterial color={LINE_WHITE} />
+        <shapeGeometry args={[arrowShape]} />
+        <meshBasicMaterial color={LINE_WHITE} depthTest={false} />
       </mesh>
     )
     
-    // Bottom right arrow
+    // Bottom right arrow - points right
     numbers.push(
       <mesh
         key={`arrow-right-bottom-${yard}`}
         position={[rightXPos, numberHeight, -numberDistance + fontSize/2 + arrowOffset]}
-        rotation={[-Math.PI / 2, 0, 0]}
+        rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
       >
-        <coneGeometry args={[arrowWidth/2, arrowSize, 3]} />
-        <meshBasicMaterial color={LINE_WHITE} />
+        <shapeGeometry args={[arrowShape]} />
+        <meshBasicMaterial color={LINE_WHITE} depthTest={false} />
       </mesh>
     )
   }

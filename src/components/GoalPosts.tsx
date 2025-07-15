@@ -16,7 +16,7 @@ export default function GoalPosts() {
   const postRadius = postDiameter / 2
   const crossbarHeight = 10 * FOOT_TO_METER // 10 feet
   const uprightHeight = 35 * FOOT_TO_METER // 35 feet above crossbar
-  const totalHeight = 45 * FOOT_TO_METER // 45 feet total height
+  const totalHeight = crossbarHeight + uprightHeight // Total height from ground
   const uprightSpacing = 18.5 * FOOT_TO_METER // 18 feet 6 inches apart (inside width)
   const goalPostDepth = 6.5 * FOOT_TO_METER // 6'6" depth
   
@@ -133,22 +133,34 @@ export default function GoalPosts() {
     // Crossbar (horizontal bar connecting the uprights)
     goalPosts.push(
       <mesh key={`crossbar-${index}`} position={[xPos, crossbarHeight, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-        <cylinderGeometry args={[postRadius, postRadius, uprightSpacing]} />
+        <cylinderGeometry args={[postRadius, postRadius, uprightSpacing + postRadius * 2]} />
         <meshBasicMaterial color={RESTRICTION_YELLOW} />
       </mesh>
     )
 
-    // Uprights with slightly tapered tops
+    // Uprights extending from crossbar
     const uprightPositions = [-uprightSpacing / 2, uprightSpacing / 2]
     uprightPositions.forEach((zPos, uprightIndex) => {
-      // Main upright
+      // Main upright - starts from crossbar and goes up
       goalPosts.push(
         <mesh
           key={`upright-${index}-${uprightIndex}`}
           position={[xPos, crossbarHeight + uprightHeight / 2, zPos]}
           castShadow
         >
-          <cylinderGeometry args={[postRadius * 0.9, postRadius, uprightHeight]} />
+          <cylinderGeometry args={[postRadius, postRadius * 0.9, uprightHeight]} />
+          <meshBasicMaterial color={RESTRICTION_YELLOW} />
+        </mesh>
+      )
+      
+      // Lower section from ground to crossbar for structural support
+      goalPosts.push(
+        <mesh
+          key={`upright-lower-${index}-${uprightIndex}`}
+          position={[xPos, crossbarHeight / 2, zPos]}
+          castShadow
+        >
+          <cylinderGeometry args={[postRadius * 1.1, postRadius, crossbarHeight]} />
           <meshBasicMaterial color={RESTRICTION_YELLOW} />
         </mesh>
       )
@@ -166,11 +178,11 @@ export default function GoalPosts() {
       )
     })
 
-    // Crossbar end caps
+    // Connection joints where uprights meet crossbar
     uprightPositions.forEach((zPos, capIndex) => {
       goalPosts.push(
-        <mesh key={`crossbar-cap-${index}-${capIndex}`} position={[xPos, crossbarHeight, zPos]} castShadow>
-          <sphereGeometry args={[postRadius * 1.5]} />
+        <mesh key={`joint-${index}-${capIndex}`} position={[xPos, crossbarHeight, zPos]} castShadow>
+          <sphereGeometry args={[postRadius * 1.2]} />
           <meshBasicMaterial color={RESTRICTION_YELLOW} />
         </mesh>
       )

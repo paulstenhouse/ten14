@@ -167,10 +167,10 @@ export default function App() {
   const [awayTeam, setAwayTeam] = useState<NFLTeam>(NFL_TEAMS.find(t => t.abbreviation === "LAR")!)
 
   const [controlsProps, setControlsProps] = useState({
-    minPolarAngle: Math.PI / 8,
-    maxPolarAngle: Math.PI / 2,
-    minAzimuthAngle: -Math.PI / 2,
-    maxAzimuthAngle: Math.PI / 2,
+    minPolarAngle: 0.1, // Prevent looking straight up into dome
+    maxPolarAngle: Math.PI / 2 - 0.2, // More restrictive to maintain minimum height
+    minAzimuthAngle: -Infinity, // Allow full 360 rotation
+    maxAzimuthAngle: Infinity, // Allow full 360 rotation
   });
 
   const moveCameraToPosition = (positionIndex: number) => {
@@ -187,17 +187,17 @@ export default function App() {
     // Update controls properties after animation completes
     if (currentView === 3) { // Bird's Eye view
       setControlsProps({
-        minPolarAngle: 0,
-        maxPolarAngle: Math.PI / 2 - 0.01,
-        minAzimuthAngle: -Math.PI,
-        maxAzimuthAngle: Math.PI,
+        minPolarAngle: 0.1,
+        maxPolarAngle: Math.PI / 2 - 0.2,
+        minAzimuthAngle: -Infinity, // Allow full 360 rotation
+        maxAzimuthAngle: Infinity, // Allow full 360 rotation
       });
     } else {
       setControlsProps({
-        minPolarAngle: Math.PI / 8,
-        maxPolarAngle: Math.PI / 2,
-        minAzimuthAngle: -Math.PI / 2,
-        maxAzimuthAngle: Math.PI / 2,
+        minPolarAngle: 0.2,
+        maxPolarAngle: Math.PI / 2 - 0.25, // Even more restrictive for standard views
+        minAzimuthAngle: -Infinity, // Allow full 360 rotation
+        maxAzimuthAngle: Infinity, // Allow full 360 rotation
       });
     }
   }
@@ -243,7 +243,7 @@ export default function App() {
   }
 
   return (
-    <div className="w-full h-screen bg-sky-200 relative overflow-hidden">
+    <div className="w-full h-screen bg-gray-900 relative overflow-hidden">
       <Canvas
         camera={{
           position: [0, 25, 80],
@@ -254,39 +254,20 @@ export default function App() {
           cameraRef.current = camera
         }}
       >
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[50, 50, 25]} intensity={1} />
+        <fog attach="fog" args={['#1a1a1a', 50, 150]} />
+        <ambientLight intensity={0.4} />
+        <directionalLight position={[0, 100, 0]} intensity={0.8} />
+        <directionalLight position={[50, 50, 25]} intensity={0.3} />
         
-        <mesh position={[0, -0.5, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-          <planeGeometry args={[1000, 1000]} />
-          <meshLambertMaterial color="#1a1a1a" />
-        </mesh>
-        
-        <group position={[0, 0, -65]}>
-          <mesh position={[0, 12, 0]} castShadow>
-            <boxGeometry args={[140, 24, 20]} />
-            <meshLambertMaterial color="#2a2a2a" />
-          </mesh>
-          <mesh position={[0, 28, -8]} castShadow>
-            <boxGeometry args={[130, 32, 15]} />
-            <meshLambertMaterial color="#333333" />
-          </mesh>
-          <mesh position={[0, 40, -5]} castShadow>
-            <boxGeometry args={[60, 8, 10]} />
-            <meshLambertMaterial color="#1a1a1a" />
-          </mesh>
-          <mesh position={[0, 8, 10]}>
-            <boxGeometry args={[138, 16, 1]} />
-            <meshLambertMaterial color="#4a4a4a" />
-          </mesh>
-        </group>
-
         <NFLField homeTeam={homeTeam} awayTeam={awayTeam} />
         
         <OrbitControls
           ref={controlsRef}
           enableDamping={true}
           dampingFactor={0.05}
+          maxDistance={80}
+          minDistance={5}
+          target={[0, 0, 0]}
           {...controlsProps}
         />
         
