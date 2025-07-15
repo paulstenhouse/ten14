@@ -55,11 +55,12 @@ export default function FieldSurface({ homeTeam, awayTeam }: FieldSurfaceProps) 
       key="home-team-name"
       position={[-(50 + END_ZONE_DEPTH / 2) * YARD_TO_METER, endZoneTextHeight, 0]}
       rotation={[-Math.PI / 2, 0, Math.PI / 2]}
-      fontSize={8 * YARD_TO_METER}
+      fontSize={4 * YARD_TO_METER}
       color="white"
       anchorX="center"
       anchorY="middle"
-      letterSpacing={0.1}
+      letterSpacing={0.05}
+      maxWidth={FIELD_WIDTH * YARD_TO_METER * 0.8}
     >
       {homeTeam.name.toUpperCase()}
     </Text>
@@ -71,11 +72,12 @@ export default function FieldSurface({ homeTeam, awayTeam }: FieldSurfaceProps) 
       key="away-team-name"
       position={[(50 + END_ZONE_DEPTH / 2) * YARD_TO_METER, endZoneTextHeight, 0]}
       rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
-      fontSize={8 * YARD_TO_METER}
+      fontSize={4 * YARD_TO_METER}
       color="white"
       anchorX="center"
       anchorY="middle"
-      letterSpacing={0.1}
+      letterSpacing={0.05}
+      maxWidth={FIELD_WIDTH * YARD_TO_METER * 0.8}
     >
       {awayTeam.name.toUpperCase()}
     </Text>
