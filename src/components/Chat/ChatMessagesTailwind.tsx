@@ -4,6 +4,7 @@ import { Button } from '../ui/button'
 import { Eye, EyeOff } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { deJeanInterceptionPlay } from '../../types/newPlayData'
+import { MessageMetadata } from './MessageMetadata'
 
 interface ChatMessagesProps {
   messages: Message[]
@@ -63,7 +64,26 @@ export default function ChatMessages({
                   <p className="text-xs text-white/90 leading-relaxed mb-3">
                     {deJeanInterceptionPlay.summary_of_play}
                   </p>
-                  <div className="flex justify-end">
+                  <div className="flex justify-between items-end">
+                    {/* Simulation metadata footer */}
+                    <div className="text-xs text-white/70 flex items-center gap-3">
+                      {message.metadata?.usage?.totalTokens && (
+                        <span className="font-mono">
+                          {message.metadata.usage.totalTokens.toLocaleString()} tokens
+                        </span>
+                      )}
+                      {message.metadata?.duration && (
+                        <span>
+                          {message.metadata.duration < 1000 
+                            ? `${message.metadata.duration}ms` 
+                            : `${(message.metadata.duration / 1000).toFixed(1)}s`}
+                        </span>
+                      )}
+                      {message.metadata?.estimatedCost && (
+                        <span>${message.metadata.estimatedCost.toFixed(4)}</span>
+                      )}
+                    </div>
+                    
                     <button 
                       className="px-3 py-1.5 bg-white text-red-700 rounded-md text-xs font-medium flex items-center gap-1.5 hover:bg-gray-100 transition-colors"
                       onClick={(e) => {
@@ -87,6 +107,9 @@ export default function ChatMessages({
                 </div>
               </>
             )}
+            
+            {/* Message metadata for AI responses */}
+            <MessageMetadata message={message} />
           </div>
         </div>
       ))}

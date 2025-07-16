@@ -6,6 +6,7 @@ import ChatMessages from './ChatMessagesTailwind'
 import ChatInput from './ChatInputTailwind'
 import FieldViewer from '../FieldViewer'
 import { AppSidebarChat } from '@/components/app-sidebar-chat'
+import { layoutConfig } from '@/config/layout'
 import {
   SidebarInset,
   SidebarProvider,
@@ -146,7 +147,80 @@ function ChatInterfaceContent() {
         threadId: '550e8400-e29b-41d4-a716-446655440001',
         role: 'assistant',
         content: 'Cooper DeJean\'s interception was a masterclass in reading the quarterback. He baited Mahomes by initially showing coverage on the underneath route, then broke on the ball at the perfect moment. The 70-yard return completely shifted momentum - the Eagles went from defending in their own territory to having the ball in prime scoring position. This kind of play showcases elite instincts and film study paying off.',
-        timestamp: new Date(Date.now() - 26 * 60 * 60 * 1000 + 30000).toISOString()
+        timestamp: new Date(Date.now() - 26 * 60 * 60 * 1000 + 30000).toISOString(),
+        metadata: {
+          usage: {
+            promptTokens: 427,
+            completionTokens: 156,
+            totalTokens: 583
+          },
+          duration: 1248,
+          model: 'claude-3-sonnet',
+          estimatedCost: 0.0024,
+          agents: [
+            {
+              tokens: 312,
+              reasoning: `User is asking about Cooper DeJean's interception play. I need to:
+1. Explain the defensive technique used
+2. Highlight the impact on the game
+3. Provide context about momentum shifts
+
+Key points to cover:
+- DeJean's baiting technique
+- Reading Mahomes' eyes
+- 70-yard return impact
+- Momentum shift implications`,
+              model: 'claude-3-haiku',
+              duration: 523,
+              cost: 0.0008
+            }
+          ]
+        }
+      },
+      {
+        id: uuidv4(),
+        threadId: '550e8400-e29b-41d4-a716-446655440001',
+        role: 'user',
+        content: 'Can you show me the exact moment of the interception?',
+        timestamp: new Date(Date.now() - 26 * 60 * 60 * 1000 + 60000).toISOString()
+      },
+      {
+        id: uuidv4(),
+        threadId: '550e8400-e29b-41d4-a716-446655440001',
+        role: 'assistant',
+        content: 'I\'ll show you the exact moment of the interception with all 22 players on the field. You can see how DeJean read Mahomes\' eyes and broke on the route perfectly.',
+        timestamp: new Date(Date.now() - 26 * 60 * 60 * 1000 + 90000).toISOString(),
+        simulation: {
+          id: '770e8400-e29b-41d4-a716-446655440001',
+          type: 'play',
+          displayTitle: 'DeJean INT - Moment of Catch'
+        },
+        metadata: {
+          usage: {
+            promptTokens: 156,
+            completionTokens: 87,
+            totalTokens: 243
+          },
+          duration: 645,
+          model: 'gpt-4-turbo',
+          estimatedCost: 0.0024,
+          agents: [
+            {
+              tokens: 243,
+              reasoning: `User wants to see the visualization of the interception play.
+              
+Actions needed:
+1. Load the simulation data for the DeJean interception
+2. Set up the 3D visualization at the moment of the catch
+3. Highlight DeJean and the ball trajectory
+
+The simulation will show all 22 players with DeJean's positioning and route break.`,
+              model: 'gpt-3.5-turbo',
+              duration: 345,
+              cost: 0.0012
+            }
+          ]
+        }
       }
     ])
     
@@ -164,7 +238,88 @@ function ChatInterfaceContent() {
         threadId: '550e8400-e29b-41d4-a716-446655440002',
         role: 'assistant',
         content: 'The Chiefs have been remarkably efficient in the red zone, converting TDs on 68% of their trips inside the 20. Their success stems from Andy Reid\'s creative play-calling and Mahomes\' ability to extend plays. They frequently use motion to create mismatches, and Travis Kelce becomes nearly unstoppable in these compressed spaces. The addition of quick-hitting RPOs has made them even more dangerous near the goal line.',
-        timestamp: new Date(Date.now() - 28 * 60 * 60 * 1000 + 30000).toISOString()
+        timestamp: new Date(Date.now() - 28 * 60 * 60 * 1000 + 30000).toISOString(),
+        metadata: {
+          usage: {
+            promptTokens: 523,
+            completionTokens: 189,
+            totalTokens: 712
+          },
+          duration: 2156,
+          model: 'gpt-4-turbo',
+          estimatedCost: 0.0089,
+          agents: [
+            {
+              tokens: 245,
+              reasoning: `Analyzing Chiefs red zone performance query. Need to gather:
+- Statistical data on red zone efficiency
+- Key factors contributing to success
+- Personnel and scheme advantages`,
+              model: 'gpt-3.5-turbo',
+              duration: 456,
+              cost: 0.0012
+            },
+            {
+              tokens: 467,
+              reasoning: `Retrieved stats showing 68% TD conversion rate. Key insights:
+- Andy Reid's play design in compressed spaces
+- Mahomes' ability to extend plays with legs
+- Travis Kelce's route running in tight windows
+- RPO usage creating defensive conflicts
+
+Will synthesize into comprehensive response.`,
+              model: 'gpt-4',
+              duration: 1700,
+              cost: 0.0077
+            }
+          ]
+        }
+      },
+      {
+        id: uuidv4(),
+        threadId: '550e8400-e29b-41d4-a716-446655440002',
+        role: 'user',
+        content: 'Show me their most successful red zone play from last game',
+        timestamp: new Date(Date.now() - 28 * 60 * 60 * 1000 + 45000).toISOString()
+      },
+      {
+        id: uuidv4(),
+        threadId: '550e8400-e29b-41d4-a716-446655440002',
+        role: 'assistant',
+        content: 'Here\'s the Chiefs\' touchdown play from the 4-yard line against the Eagles. Notice how they use motion to create a pick play for Kelce, while Mahomes has the RPO option if the linebacker crashes down.',
+        timestamp: new Date(Date.now() - 28 * 60 * 60 * 1000 + 75000).toISOString(),
+        simulation: {
+          id: '770e8400-e29b-41d4-a716-446655440002',
+          type: 'play',
+          displayTitle: 'Chiefs RZ TD - Kelce 4yd'
+        },
+        metadata: {
+          usage: {
+            promptTokens: 198,
+            completionTokens: 112,
+            totalTokens: 310
+          },
+          duration: 1123,
+          model: 'claude-3-sonnet',
+          estimatedCost: 0.0019,
+          agents: [
+            {
+              tokens: 310,
+              reasoning: `User requesting visualization of successful red zone play.
+
+Selecting the Kelce touchdown from 4-yard line:
+- Shows motion creating picks
+- Demonstrates RPO concept
+- Highlights red zone efficiency
+- Good example of Chiefs' scheme in compressed space
+
+Will load simulation with focus on pre-snap motion and route development.`,
+              model: 'claude-3-haiku',
+              duration: 423,
+              cost: 0.0008
+            }
+          ]
+        }
       }
     ])
     
@@ -182,7 +337,43 @@ function ChatInterfaceContent() {
         threadId: '550e8400-e29b-41d4-a716-446655440003',
         role: 'assistant',
         content: 'Modern defenses are increasingly relying on nickel and dime packages as their base formations. With offenses spreading the field more, having 5-6 DBs on the field has become essential. The "Big Nickel" with a safety-linebacker hybrid is particularly popular. Teams are also using more simulated pressures and post-snap rotation to confuse QBs while maintaining coverage integrity.',
-        timestamp: new Date(Date.now() - 30 * 60 * 60 * 1000 + 30000).toISOString()
+        timestamp: new Date(Date.now() - 30 * 60 * 60 * 1000 + 30000).toISOString(),
+        metadata: {
+          usage: {
+            promptTokens: 387,
+            completionTokens: 142,
+            totalTokens: 529
+          },
+          duration: 1856,
+          model: 'claude-3-opus',
+          estimatedCost: 0.0079,
+          agents: [
+            {
+              tokens: 287,
+              reasoning: `User asking about defensive formations against modern offenses. Key analysis points:
+- Base defensive packages evolution
+- Personnel groupings (nickel/dime)
+- Coverage disguises and rotations
+- Pressure schemes
+
+Need to explain the shift from traditional 4-3/3-4 to more DB-heavy packages due to passing game evolution.`,
+              model: 'claude-3-opus',
+              duration: 892,
+              cost: 0.0043
+            },
+            {
+              tokens: 242,
+              reasoning: `Additional context on Big Nickel package:
+- Hybrid safety/linebacker role
+- Allows flexibility vs run/pass
+- Popular with teams like Ravens, Steelers
+- Simulated pressures create confusion without committing to blitz`,
+              model: 'claude-3-sonnet',
+              duration: 964,
+              cost: 0.0036
+            }
+          ]
+        }
       }
     ])
     
@@ -200,7 +391,36 @@ function ChatInterfaceContent() {
         threadId: '550e8400-e29b-41d4-a716-446655440004',
         role: 'assistant',
         content: 'The Eagles have mastered the art of disguise. They show one coverage pre-snap and rotate to another post-snap about 40% of the time. Their corners play aggressive press-man coverage, allowing safeties to provide help over the top. The addition of veteran leadership in the secondary has improved their communication, making these complex schemes executable at game speed.',
-        timestamp: new Date(Date.now() - 32 * 60 * 60 * 1000 + 30000).toISOString()
+        timestamp: new Date(Date.now() - 32 * 60 * 60 * 1000 + 30000).toISOString(),
+        metadata: {
+          usage: {
+            promptTokens: 412,
+            completionTokens: 168,
+            totalTokens: 580
+          },
+          duration: 2347,
+          model: 'gpt-4',
+          estimatedCost: 0.0174,
+          agents: [
+            {
+              tokens: 580,
+              reasoning: `Analyzing Eagles defensive scheme effectiveness. Research shows:
+1. Pre-snap disguise rate: ~40% coverage rotation
+2. Press-man coverage enabling safety help
+3. Veteran additions (Bradberry, CJGJ) improving communication
+4. Complex schemes require elite execution
+
+Their success comes from:
+- Personnel talent at CB position
+- Safety versatility (can play high or in box)
+- Excellent defensive coordinator (Jonathan Gannon)
+- Practice time invested in disguises`,
+              model: 'gpt-4',
+              duration: 2347,
+              cost: 0.0174
+            }
+          ]
+        }
       }
     ])
     
@@ -218,7 +438,33 @@ function ChatInterfaceContent() {
         threadId: '550e8400-e29b-41d4-a716-446655440005',
         role: 'assistant',
         content: 'Pocket presence remains crucial despite the rise of mobile QBs. Elite quarterbacks know how to subtly slide within the pocket to buy extra time while keeping their eyes downfield. The best ones have an internal clock and feel pressure without seeing it. This skill often separates good QBs from great ones - it\'s why veterans like Brady and Manning excelled despite limited mobility.',
-        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000 + 30000).toISOString()
+        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000 + 30000).toISOString(),
+        metadata: {
+          usage: {
+            promptTokens: 298,
+            completionTokens: 124,
+            totalTokens: 422
+          },
+          duration: 954,
+          model: 'claude-3-sonnet',
+          estimatedCost: 0.0015,
+          agents: [
+            {
+              tokens: 422,
+              reasoning: `QB pocket presence analysis request. Key elements to address:
+- Importance hasn't diminished with mobile QB trend
+- Subtle movements vs scrambling
+- Internal clock development
+- Eyes downfield principle
+- Examples: Brady, Manning success
+
+This is fundamental QB skill that transcends athleticism.`,
+              model: 'claude-3-sonnet',
+              duration: 954,
+              cost: 0.0015
+            }
+          ]
+        }
       }
     ])
     
@@ -236,7 +482,45 @@ function ChatInterfaceContent() {
         threadId: '550e8400-e29b-41d4-a716-446655440006',
         role: 'assistant',
         content: 'Against zone coverage, the key is creating horizontal and vertical stretches. The "Flood" concept with three receivers at different levels is highly effective. Combining deep digs with underneath crossers creates natural windows in the zones. Many teams also use "Smash-7" routes where receivers sit down in the soft spots between zones. The timing between QB and receiver is crucial for exploiting these windows.',
-        timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000 + 30000).toISOString()
+        timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000 + 30000).toISOString(),
+        metadata: {
+          usage: {
+            promptTokens: 456,
+            completionTokens: 187,
+            totalTokens: 643
+          },
+          duration: 2789,
+          model: 'gpt-4-turbo',
+          estimatedCost: 0.0083,
+          agents: [
+            {
+              tokens: 234,
+              reasoning: `Zone coverage beating concepts analysis:
+- Flood routes (3 levels vertical stretch)
+- Dig/Crosser combinations
+- Smash-7 (spot routes)
+
+Need to explain the geometry and timing aspects.`,
+              model: 'gpt-3.5-turbo',
+              duration: 467,
+              cost: 0.0012
+            },
+            {
+              tokens: 409,
+              reasoning: `Detailed route concepts vs zone:
+1. Flood - Hi/Mid/Low triangle stretch
+2. Dig concept - 15-18 yard in-breakers
+3. Crossers - horizontal stretch underneath
+4. Smash-7 - Corner/Quick game combo
+5. Spacing concepts - 5 receivers across
+
+Timing is critical - ball must arrive as receiver enters window before zone defenders can react.`,
+              model: 'gpt-4-turbo',
+              duration: 2322,
+              cost: 0.0071
+            }
+          ]
+        }
       }
     ])
     
@@ -254,7 +538,46 @@ function ChatInterfaceContent() {
         threadId: '550e8400-e29b-41d4-a716-446655440007',
         role: 'assistant',
         content: 'Modern O-lines are using more "Big on Big" protection schemes to handle complex pressures. Slide protection has become the norm, allowing the line to work as a unit. Teams are also keeping TEs and RBs in to help more frequently. The emphasis has shifted from individual matchups to collective protection, with centers making more pre-snap calls to identify potential threats.',
-        timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000 + 30000).toISOString()
+        timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000 + 30000).toISOString(),
+        metadata: {
+          usage: {
+            promptTokens: 512,
+            completionTokens: 176,
+            totalTokens: 688
+          },
+          duration: 1623,
+          model: 'claude-3-opus',
+          estimatedCost: 0.0103,
+          agents: [
+            {
+              tokens: 356,
+              reasoning: `O-line adaptation to modern pass rush:
+- Big on Big (5 OL take 5 most dangerous)
+- Slide protection prevalence
+- 6-7 man protections more common
+- Center as QB of OL
+
+This reflects defensive evolution with more exotic pressures and simulated looks.`,
+              model: 'claude-3-haiku',
+              duration: 423,
+              cost: 0.0009
+            },
+            {
+              tokens: 332,
+              reasoning: `Additional protection scheme details:
+- Vertical sets vs traditional kick-slide
+- Combo blocks transitioning to LBs
+- RB check-release rules
+- Hot routes vs unblocked defenders
+- Communication systems (alerts, calls)
+
+Modern game requires more mental processing pre-snap.`,
+              model: 'claude-3-opus',
+              duration: 1200,
+              cost: 0.0094
+            }
+          ]
+        }
       }
     ])
     
@@ -272,7 +595,46 @@ function ChatInterfaceContent() {
         threadId: '550e8400-e29b-41d4-a716-446655440008',
         role: 'assistant',
         content: 'Field position has become a chess match. Teams are using more directional punting to pin opponents deep, and "sky kicks" on kickoffs to limit returns while maximizing hang time. The new fair catch rule on kickoffs has changed strategies significantly. Some teams are also investing heavily in punt return schemes, using designed returns more frequently to create big plays.',
-        timestamp: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000 + 30000).toISOString()
+        timestamp: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000 + 30000).toISOString(),
+        metadata: {
+          usage: {
+            promptTokens: 478,
+            completionTokens: 165,
+            totalTokens: 643
+          },
+          duration: 2934,
+          model: 'gpt-4',
+          estimatedCost: 0.0193,
+          agents: [
+            {
+              tokens: 298,
+              reasoning: `Special teams strategy analysis focusing on field position battle:
+1. Directional punting trends
+2. Sky kicks on kickoffs
+3. New fair catch rule impact
+4. Designed punt returns
+
+Need to explain how these strategies affect game outcomes.`,
+              model: 'gpt-4',
+              duration: 1456,
+              cost: 0.0089
+            },
+            {
+              tokens: 345,
+              reasoning: `Deeper analysis of special teams evolution:
+- Coffin corner punts vs rugby style
+- Hang time metrics (4.5+ seconds ideal)
+- Fair catch at 25 yard line rule
+- Wall returns vs traditional wedge
+- Analytics driving 4th down decisions
+
+Field position correlation with winning percentage is stronger than ever.`,
+              model: 'gpt-4',
+              duration: 1478,
+              cost: 0.0104
+            }
+          ]
+        }
       }
     ])
     
@@ -288,6 +650,9 @@ function ChatInterfaceContent() {
   const [mainAreaWidth, setMainAreaWidth] = useState(window.innerWidth)
   const mainAreaRef = useRef<HTMLDivElement>(null)
   const [currentPlayDescription, setCurrentPlayDescription] = useState<string>('')
+  
+  // Calculate minimum panel size as percentage
+  const minPanelPercentage = Math.max(35, (layoutConfig.minPanelWidth / mainAreaWidth) * 100)
   
   // Sync with URL params
   useEffect(() => {
@@ -379,6 +744,7 @@ function ChatInterfaceContent() {
     }
 
     // Demo response - always show the field diagram
+    const responseStartTime = Date.now()
     const aiMessage: Message = {
       id: uuidv4(),
       threadId: selectedThreadId,
@@ -389,8 +755,47 @@ function ChatInterfaceContent() {
         id: '770e8400-e29b-41d4-a716-446655440001',
         type: 'play',
         displayTitle: 'DeJean INT Return - 70 yards'
+      },
+      metadata: {
+        usage: {
+          promptTokens: Math.floor(Math.random() * 500) + 300,
+          completionTokens: Math.floor(Math.random() * 200) + 100,
+          totalTokens: 0 // Will calculate below
+        },
+        duration: Math.floor(Math.random() * 2000) + 800, // 0.8-2.8s
+        model: 'gpt-4-turbo',
+        estimatedCost: 0, // Will calculate below
+        agents: [
+          {
+            tokens: Math.floor(Math.random() * 300) + 200,
+            reasoning: `Analyzing user query for NFL play request...
+            
+User is asking about a specific play visualization. Based on the context:
+- They want to see Cooper DeJean's interception
+- This is from the Chiefs vs Eagles game
+- The interception was returned for 70 yards
+- This was a pivotal moment in the game
+
+I should provide:
+1. A brief explanation of the play
+2. Access to the 3D visualization
+3. Context about why this play was significant
+
+The simulation data is available for play ID 770e8400-e29b-41d4-a716-446655440001.`,
+            model: 'gpt-4',
+            duration: Math.floor(Math.random() * 800) + 400,
+            cost: Math.random() * 0.02 + 0.01
+          }
+        ]
       }
     }
+    
+    // Calculate totals
+    aiMessage.metadata!.usage!.totalTokens = 
+      aiMessage.metadata!.usage!.promptTokens! + aiMessage.metadata!.usage!.completionTokens!
+    aiMessage.metadata!.estimatedCost = 
+      (aiMessage.metadata!.usage!.promptTokens! * 0.00003) + 
+      (aiMessage.metadata!.usage!.completionTokens! * 0.00006)
 
     // Update messages map
     const updatedMessages = new Map(messages)
@@ -466,7 +871,7 @@ function ChatInterfaceContent() {
       <SidebarInset className="overflow-hidden" ref={mainAreaRef}>
           {fieldDiagramOpenForMessage && fieldDiagramMode !== 'fullscreen' && !isMobile && mainAreaWidth >= 650 ? (
             <ResizablePanelGroup direction="horizontal" className="h-full">
-              <ResizablePanel defaultSize={50} minSize={35}>
+              <ResizablePanel defaultSize={50} minSize={minPanelPercentage}>
                 {/* Chat Section */}
                 <div className="flex h-full flex-col">
                   {/* Header */}
@@ -484,19 +889,23 @@ function ChatInterfaceContent() {
                   {selectedThread ? (
                     <>
                       {/* Messages */}
-                      <div className="flex-1">
-                        {threadMessages.length > 0 && (
-                          <ChatMessages
-                            messages={threadMessages}
-                            onToggleFieldDiagram={handleToggleFieldDiagram}
-                            fieldDiagramOpenForMessage={fieldDiagramOpenForMessage}
-                            currentPlayDescription={currentPlayDescription}
-                          />
-                        )}
-                      </div>
+                      <div className="flex-1 flex flex-col">
+                        <div className="flex-1 flex justify-center">
+                          <div className="w-full" style={{ maxWidth: layoutConfig.chatContentMaxWidth }}>
+                            {threadMessages.length > 0 && (
+                              <ChatMessages
+                                messages={threadMessages}
+                                onToggleFieldDiagram={handleToggleFieldDiagram}
+                                fieldDiagramOpenForMessage={fieldDiagramOpenForMessage}
+                                currentPlayDescription={currentPlayDescription}
+                              />
+                            )}
+                          </div>
+                        </div>
 
-                      {/* Input */}
-                      <ChatInput onSendMessage={handleSendMessage} />
+                        {/* Input */}
+                        <ChatInput onSendMessage={handleSendMessage} />
+                      </div>
                     </>
                   ) : (
                     <div className="flex flex-1 items-center justify-center p-8">
@@ -550,7 +959,7 @@ function ChatInterfaceContent() {
               
               <ResizableHandle withHandle />
               
-              <ResizablePanel defaultSize={50} minSize={35}>
+              <ResizablePanel defaultSize={50} minSize={minPanelPercentage}>
                 {/* Simulation Panel */}
                 <div className="flex h-full flex-col">
                   <div className="flex h-14 items-center justify-between border-b border-border px-4 lg:h-[60px]">
@@ -598,19 +1007,23 @@ function ChatInterfaceContent() {
                 {selectedThread ? (
                   <>
                     {/* Messages */}
-                    <div className="flex-1">
-                      {threadMessages.length > 0 && (
-                        <ChatMessages
-                          messages={threadMessages}
-                          onToggleFieldDiagram={handleToggleFieldDiagram}
-                          fieldDiagramOpenForMessage={fieldDiagramOpenForMessage}
-                          currentPlayDescription={currentPlayDescription}
-                        />
-                      )}
-                    </div>
+                    <div className="flex-1 flex flex-col">
+                      <div className="flex-1 flex justify-center">
+                        <div className="w-full" style={{ maxWidth: layoutConfig.chatContentMaxWidth }}>
+                          {threadMessages.length > 0 && (
+                            <ChatMessages
+                              messages={threadMessages}
+                              onToggleFieldDiagram={handleToggleFieldDiagram}
+                              fieldDiagramOpenForMessage={fieldDiagramOpenForMessage}
+                              currentPlayDescription={currentPlayDescription}
+                            />
+                          )}
+                        </div>
+                      </div>
 
-                    {/* Input */}
-                    <ChatInput onSendMessage={handleSendMessage} />
+                      {/* Input */}
+                      <ChatInput onSendMessage={handleSendMessage} />
+                    </div>
                   </>
                 ) : (
                   <div className="flex flex-1 items-center justify-center p-8">

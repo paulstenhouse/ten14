@@ -1,6 +1,7 @@
 import { useState, KeyboardEvent } from 'react'
 import { Button } from '../ui/button'
 import { Send } from 'lucide-react'
+import { layoutConfig } from '@/config/layout'
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void
@@ -27,7 +28,7 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
 
   return (
     <div className="border-t border-border p-4">
-      <div className="flex items-end gap-3">
+      <div className="flex items-end gap-3 mx-auto" style={{ maxWidth: layoutConfig.chatContentMaxWidth }}>
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
