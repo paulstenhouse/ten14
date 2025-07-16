@@ -49,22 +49,22 @@ function getTimeAgo(date: string): string {
     // Yesterday - show hours
     return `${hours}h ago`
   } else if (days < 7) {
-    // Within a week - show date in user's locale format
+    // Within a week - show date in user's locale format (M/D or D/M)
     return dateObj.toLocaleDateString(undefined, { 
       month: 'numeric', 
       day: 'numeric' 
     })
   } else if (days < 365) {
-    // Within a year - show date without year
+    // Within a year - show date without year in local format
     return dateObj.toLocaleDateString(undefined, { 
-      month: 'short', 
+      month: 'numeric', 
       day: 'numeric' 
     })
   } else {
-    // Over a year - show full date
+    // Over a year - show full date in local format
     return dateObj.toLocaleDateString(undefined, { 
       year: 'numeric',
-      month: 'short', 
+      month: 'numeric', 
       day: 'numeric' 
     })
   }

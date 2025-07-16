@@ -7,6 +7,7 @@ import ChatInput from './ChatInputTailwind'
 import FieldViewer from '../FieldViewer'
 import { AppSidebarChat } from '@/components/app-sidebar-chat'
 import { layoutConfig } from '@/config/layout'
+import { ThreadDetails } from './ThreadDetails'
 import {
   SidebarInset,
   SidebarProvider,
@@ -31,13 +32,13 @@ function ChatInterfaceContent() {
     const now = new Date()
     const threads: Thread[] = []
     
-    // Yesterday's threads
+    // Yesterday's threads (within 24-48 hours ago)
     threads.push({
       id: '550e8400-e29b-41d4-a716-446655440001',
       title: 'DeJean Interception Analysis',
-      createdAt: new Date(now.getTime() - 26 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(now.getTime() - 26 * 60 * 60 * 1000).toISOString(),
-      lastMessageAt: new Date(now.getTime() - 26 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(now.getTime() - 30 * 60 * 60 * 1000).toISOString(), // 30h ago
+      updatedAt: new Date(now.getTime() - 30 * 60 * 60 * 1000).toISOString(),
+      lastMessageAt: new Date(now.getTime() - 30 * 60 * 60 * 1000).toISOString(),
       metadata: {
         tags: ['interception', 'eagles', 'chiefs'],
         sport: 'nfl',
@@ -48,8 +49,8 @@ function ChatInterfaceContent() {
     threads.push({
       id: '550e8400-e29b-41d4-a716-446655440002',
       title: 'Chiefs Red Zone Offense',
-      createdAt: new Date(now.getTime() - 28 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(now.getTime() - 28 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(now.getTime() - 35 * 60 * 60 * 1000).toISOString(), // 35h ago
+      updatedAt: new Date(now.getTime() - 35 * 60 * 60 * 1000).toISOString(),
       metadata: {
         tags: ['offense', 'red-zone', 'chiefs'],
         sport: 'nfl',
@@ -60,8 +61,8 @@ function ChatInterfaceContent() {
     threads.push({
       id: '550e8400-e29b-41d4-a716-446655440003',
       title: 'Defense Formation Setup',
-      createdAt: new Date(now.getTime() - 30 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(now.getTime() - 30 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(now.getTime() - 40 * 60 * 60 * 1000).toISOString(), // 40h ago
+      updatedAt: new Date(now.getTime() - 40 * 60 * 60 * 1000).toISOString(),
       metadata: {
         tags: ['defense', 'formation', 'strategy'],
         sport: 'nfl'
@@ -71,8 +72,8 @@ function ChatInterfaceContent() {
     threads.push({
       id: '550e8400-e29b-41d4-a716-446655440004',
       title: 'Eagles Coverage Schemes',
-      createdAt: new Date(now.getTime() - 32 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(now.getTime() - 32 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(now.getTime() - 45 * 60 * 60 * 1000).toISOString(), // 45h ago
+      updatedAt: new Date(now.getTime() - 45 * 60 * 60 * 1000).toISOString(),
       metadata: {
         tags: ['coverage', 'defense', 'eagles'],
         sport: 'nfl',
@@ -80,7 +81,7 @@ function ChatInterfaceContent() {
       }
     })
     
-    // Last week's threads
+    // Last week's threads (3-7 days ago)
     threads.push({
       id: '550e8400-e29b-41d4-a716-446655440005',
       title: 'Quarterback Positioning',
@@ -103,7 +104,7 @@ function ChatInterfaceContent() {
       }
     })
     
-    // Earlier threads
+    // Earlier threads (8+ days ago)
     threads.push({
       id: '550e8400-e29b-41d4-a716-446655440007',
       title: 'Offensive Line Formations',
@@ -118,8 +119,8 @@ function ChatInterfaceContent() {
     threads.push({
       id: '550e8400-e29b-41d4-a716-446655440008',
       title: 'Special Teams Strategy',
-      createdAt: new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(now.getTime() - 21 * 24 * 60 * 60 * 1000).toISOString(),
+      updatedAt: new Date(now.getTime() - 21 * 24 * 60 * 60 * 1000).toISOString(),
       metadata: {
         tags: ['special-teams', 'strategy', 'kicking'],
         sport: 'nfl'
@@ -140,7 +141,7 @@ function ChatInterfaceContent() {
         threadId: '550e8400-e29b-41d4-a716-446655440001',
         role: 'user',
         content: 'Can you break down the DeJean interception? What made it such a game-changing play?',
-        timestamp: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString()
+        timestamp: new Date(Date.now() - 30 * 60 * 60 * 1000).toISOString()
       },
       {
         id: uuidv4(),
@@ -875,13 +876,19 @@ The simulation data is available for play ID 770e8400-e29b-41d4-a716-44665544000
                 {/* Chat Section */}
                 <div className="flex h-full flex-col">
                   {/* Header */}
-                  <header className="flex h-14 items-center gap-4 border-b border-border px-4 lg:h-[60px]">
+                  <header className="relative flex h-14 items-center gap-4 border-b border-border px-4 lg:h-[60px]">
                     <SidebarTrigger className="text-foreground" />
                     <Separator orientation="vertical" className="h-6" />
                     {selectedThread && (
-                      <h2 className="text-lg font-semibold text-foreground">
-                        {selectedThread.title}
-                      </h2>
+                      <>
+                        <h2 className="text-lg font-semibold text-foreground flex-1">
+                          {selectedThread.title}
+                        </h2>
+                        <ThreadDetails 
+                          thread={selectedThread} 
+                          messages={threadMessages}
+                        />
+                      </>
                     )}
                   </header>
 
@@ -993,13 +1000,19 @@ The simulation data is available for play ID 770e8400-e29b-41d4-a716-44665544000
               {/* Chat Section */}
               <div className="flex flex-1 flex-col">
                 {/* Header */}
-                <header className="flex h-14 items-center gap-4 border-b border-border px-4 lg:h-[60px]">
+                <header className="relative flex h-14 items-center gap-4 border-b border-border px-4 lg:h-[60px]">
                   <SidebarTrigger className="text-foreground" />
                   <Separator orientation="vertical" className="h-6" />
                   {selectedThread && (
-                    <h2 className="text-lg font-semibold text-foreground">
-                      {selectedThread.title}
-                    </h2>
+                    <>
+                      <h2 className="text-lg font-semibold text-foreground flex-1">
+                        {selectedThread.title}
+                      </h2>
+                      <ThreadDetails 
+                        thread={selectedThread} 
+                        messages={threadMessages}
+                      />
+                    </>
                   )}
                 </header>
 

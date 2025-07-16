@@ -9,6 +9,17 @@ export interface Thread {
     sport?: string             // Sport type (e.g., "nfl", "nba")
     teams?: string[]           // Team abbreviations involved
   }
+  stats?: {
+    totalTokens?: number       // Total tokens used in this thread
+    totalCost?: number         // Total cost in dollars
+    messageCount?: number      // Number of messages
+    modelBreakdown?: {         // Token usage by model
+      [model: string]: {
+        tokens: number
+        cost: number
+      }
+    }
+  }
 }
 
 export interface AgentMetadata {
