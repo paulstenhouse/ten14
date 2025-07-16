@@ -103,6 +103,7 @@ export default function ChatInterfaceInset() {
   const [isMobile, setIsMobile] = useState(false)
   const [mainAreaWidth, setMainAreaWidth] = useState(window.innerWidth)
   const mainAreaRef = useRef<HTMLDivElement>(null)
+  const [currentPlayDescription, setCurrentPlayDescription] = useState<string>('')
   
   // Check for mobile breakpoint at 728px
   useEffect(() => {
@@ -299,7 +300,7 @@ export default function ChatInterfaceInset() {
                     </div>
                   </div>
                   <div className="flex-1">
-                    <FieldViewer key={`field-${fieldDiagramMode}`} />
+                    <FieldViewer key={`field-${fieldDiagramMode}`} onPlayDescriptionChange={setCurrentPlayDescription} />
                   </div>
                 </div>
               </ResizablePanel>
@@ -340,6 +341,7 @@ export default function ChatInterfaceInset() {
                           messages={selectedConversation.messages}
                           onToggleFieldDiagram={handleToggleFieldDiagram}
                           fieldDiagramOpenForMessage={fieldDiagramOpenForMessage}
+                          currentPlayDescription={currentPlayDescription}
                         />
                       )}
                     </div>
@@ -387,7 +389,7 @@ export default function ChatInterfaceInset() {
             </div>
           </div>
           <div className="flex-1">
-            <FieldViewer />
+            <FieldViewer onPlayDescriptionChange={setCurrentPlayDescription} />
           </div>
         </div>
       )}

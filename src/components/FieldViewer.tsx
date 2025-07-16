@@ -8,6 +8,91 @@ import { NFL_TEAMS, NFLTeam } from "../data/nflTeams"
 import { deJeanInterceptionData } from "../types/playData"
 import { deJeanInterceptionPlay, convertToAnimationFrames, createPlayerInfo } from "../types/newPlayData"
 
+// Helper functions for camera positioning
+const getQBPositionFromFrames = (animationFrames: any) => {
+  // Get QB position from animation data
+  if (animationFrames && animationFrames.length > 0) {
+    const frame = animationFrames[0] // Use first frame for initial position
+    const qb = frame.offense_kc.find(p => p.id === 1) // Mahomes is id 1
+    if (qb) {
+      return new THREE.Vector3(qb.pos[1], 1, qb.pos[0]) // Swap coordinates
+    }
+  }
+  // Fallback position
+  return new THREE.Vector3(28, 1, -1)
+}
+
+const getMLBPositionFromFrames = (animationFrames: any) => {
+  // Get middle linebacker position from animation data
+  if (animationFrames && animationFrames.length > 0) {
+    const frame = animationFrames[0]
+    const mlb = frame.defense_phi.find(p => p.id === 31 || p.id === 32) // LBs
+    if (mlb) {
+      return new THREE.Vector3(mlb.pos[1], 1.5, mlb.pos[0]) // Swap coordinates
+    }
+  }
+  // Fallback position
+  return new THREE.Vector3(20, 1.5, 0)
+}
+
+const getCameraPresetsFromFrames = (animationFrames: any) => {
+  const qbPos = getQBPositionFromFrames(animationFrames)
+  const mlbPos = getMLBPositionFromFrames(animationFrames)
+  
+  // In the coordinate system:
+  // - Positive z points toward Eagles endzone
+  // - Chiefs (offense) start at z≈28 (in their own territory)  
+  // - Eagles (defense) are at z≈15-20
+  // - So Chiefs are facing negative z (toward Eagles endzone which is at negative z)
+  const offenseFacingNegativeZ = true
+
+  return [
+    {
+      name: "Sideline View",
+      position: new THREE.Vector3(qbPos.x, 20, qbPos.z + 35),
+      target: qbPos,
+    },
+    {
+      name: "Behind QB",
+      // Camera should be behind QB based on which way they're facing
+      position: new THREE.Vector3(
+        qbPos.x + (offenseFacingNegativeZ ? 15 : -15), 
+        8, 
+        qbPos.z
+      ),
+      target: new THREE.Vector3(
+        qbPos.x - (offenseFacingNegativeZ ? 5 : -5),
+        qbPos.y,
+        qbPos.z
+      ),
+    },
+    {
+      name: "Defense POV",
+      // Camera should be behind defense looking at offense
+      position: new THREE.Vector3(
+        mlbPos.x - (offenseFacingNegativeZ ? 15 : -15), 
+        mlbPos.y + 10, 
+        mlbPos.z
+      ),
+      target: qbPos,
+    },
+    {
+      name: "Bird's Eye",
+      // Position camera above field from same side as sideline view
+      position: new THREE.Vector3(
+        qbPos.x, 
+        50, 
+        qbPos.z + 15 // Positioned on same side as sideline view
+      ), 
+      target: new THREE.Vector3(
+        qbPos.x,
+        0,
+        qbPos.z - 5 // Look slightly ahead of QB
+      ),
+    }
+  ]
+}
+
 // Camera animation component (copied from App.tsx)
 function CameraController({ 
   targetView, 
@@ -72,6 +157,7 @@ function CameraController({
     // Fallback position
     return new THREE.Vector3(20, 1.5, 0)
   }
+
 
   const getCameraPresets = () => {
     const qbPos = getQBPosition()
@@ -252,10 +338,15 @@ function CameraController({
   return null
 }
 
-export default function FieldViewer() {
+interface FieldViewerProps {
+  onPlayDescriptionChange?: (description: string) => void
+}
+
+export default function FieldViewer({ onPlayDescriptionChange }: FieldViewerProps = {}) {
   const [currentView, setCurrentView] = useState(1) // Start with "Behind QB" view (index 1)
   const [isAnimating, setIsAnimating] = useState(false)
   const [animationTrigger, setAnimationTrigger] = useState(0)
+  const [initialCameraSet, setInitialCameraSet] = useState(false)
   const controlsRef = useRef<any>(null)
   
   const [homeTeam, setHomeTeam] = useState<NFLTeam>(NFL_TEAMS.find(t => t.abbreviation === "KC")!)
@@ -268,6 +359,8 @@ export default function FieldViewer() {
   const [seekTime, setSeekTime] = useState<number | null>(0) // Start at first frame
   const [showOpenSpace, setShowOpenSpace] = useState(false)
   const [isAtEnd, setIsAtEnd] = useState(false)
+  const [selectedPlayers, setSelectedPlayers] = useState<Set<string>>(new Set())
+  const [showAllTracks, setShowAllTracks] = useState(false)
   
   // Convert new format to old format for compatibility
   const animationFrames = convertToAnimationFrames(deJeanInterceptionPlay)
@@ -375,6 +468,22 @@ export default function FieldViewer() {
     } else {
       setIsAtEnd(false)
     }
+    
+    // Update play description
+    if (onPlayDescriptionChange) {
+      const currentPlay = deJeanInterceptionPlay.plays.find((play, index) => {
+        const nextPlay = deJeanInterceptionPlay.plays[index + 1]
+        if (!nextPlay) return frameIndex >= animationFrames.length - 1
+        const currentTime = animationFrames[frameIndex].frame_time_seconds
+        return currentTime >= play.time && currentTime < nextPlay.time
+      })
+      
+      if (currentPlay?.description) {
+        onPlayDescriptionChange(currentPlay.description)
+      } else if (frameIndex === 0 && deJeanInterceptionPlay.summary_of_play) {
+        onPlayDescriptionChange(deJeanInterceptionPlay.summary_of_play)
+      }
+    }
   }
   
   const onAnimationTimeChange = (time: number) => {
@@ -390,15 +499,48 @@ export default function FieldViewer() {
       setAnimationMode(true)
     }
   }
+  
+  const handleToggleAllTracks = () => {
+    if (showAllTracks || selectedPlayers.size > 0) {
+      // Turn all tracks off
+      setSelectedPlayers(new Set())
+      setShowAllTracks(false)
+    } else {
+      // Turn all tracks on
+      const allPlayerIds = new Set<string>()
+      if (animationFrames.length > 0) {
+        const frame = animationFrames[0]
+        frame.offense_kc.forEach(player => allPlayerIds.add(`offense_kc-${player.id}`))
+        frame.defense_phi.forEach(player => allPlayerIds.add(`defense_phi-${player.id}`))
+      }
+      setSelectedPlayers(allPlayerIds)
+      setShowAllTracks(true)
+    }
+  }
 
   return (
     <div className="w-full h-full bg-white dark:bg-zinc-900 relative">
       <Canvas
         camera={{
-          position: [-4.5 * 0.9144 - 15, 8, 0], // Behind QB position
+          position: [0, 8, 0], // Initial position, will be updated
           fov: 75,
         }}
         style={{ width: '100%', height: '100%' }}
+        onCreated={({ camera }) => {
+          // Set initial camera to Behind QB view after canvas is created
+          if (!initialCameraSet) {
+            const presets = getCameraPresetsFromFrames(animationFrames)
+            const qbPos = presets[1].position
+            const targetPos = presets[1].target
+            camera.position.copy(qbPos)
+            camera.lookAt(targetPos)
+            if (controlsRef.current) {
+              controlsRef.current.target.copy(targetPos)
+              controlsRef.current.update()
+            }
+            setInitialCameraSet(true)
+          }
+        }}
       >
         <fog attach="fog" args={[isDarkMode ? '#18181b' : '#f5f5f5', 100, 250]} />
         <ambientLight intensity={0.4} />
@@ -416,6 +558,8 @@ export default function FieldViewer() {
           onTimeChange={onAnimationTimeChange}
           seekTime={seekTime}
           showOpenSpace={showOpenSpace}
+          selectedPlayers={selectedPlayers}
+          setSelectedPlayers={setSelectedPlayers}
         />
         
         <OrbitControls
@@ -457,7 +601,9 @@ export default function FieldViewer() {
       <div className="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-sm p-3 border-t border-gray-200 dark:border-zinc-800">
         <div className="flex items-center justify-center gap-2 flex-wrap">
           {/* Camera buttons */}
-          <div className="flex gap-1.5">
+          <div className="flex flex-col items-start">
+            <span className="text-[10px] uppercase text-muted-foreground mb-1">Camera Controls</span>
+            <div className="flex gap-1.5">
             {['Sideline', 'Behind QB', 'Defense POV', 'Bird\'s Eye'].map((view, index) => {
               // Direct index mapping since buttons are now in same order as camera presets
               return (
@@ -471,42 +617,17 @@ export default function FieldViewer() {
               </button>
               )
             })}
-          </div>
-          
-          <div className="w-px h-5 bg-border" />
-          
-          {/* Team selection */}
-          <div className="flex gap-2 items-center">
-            <select
-              value={homeTeam.abbreviation}
-              onChange={(e) => setHomeTeam(NFL_TEAMS.find(t => t.abbreviation === e.target.value)!)}
-              className="px-2 py-1 bg-secondary text-secondary-foreground border-0 rounded text-xs"
-            >
-              {NFL_TEAMS.map(team => (
-                <option key={team.abbreviation} value={team.abbreviation}>
-                  {team.abbreviation}
-                </option>
-              ))}
-            </select>
-            <span style={{ color: '#888', fontSize: '12px' }}>vs</span>
-            <select
-              value={awayTeam.abbreviation}
-              onChange={(e) => setAwayTeam(NFL_TEAMS.find(t => t.abbreviation === e.target.value)!)}
-              className="px-2 py-1 bg-secondary text-secondary-foreground border-0 rounded text-xs"
-            >
-              {NFL_TEAMS.map(team => (
-                <option key={team.abbreviation} value={team.abbreviation}>
-                  {team.abbreviation}
-                </option>
-              ))}
-            </select>
+            </div>
           </div>
           
           {/* Open Space toggle */}
           {showRealPlay && animationMode && (
             <>
               <div className="w-px h-5 bg-border" />
-              <button
+              <div className="flex flex-col items-start">
+                <span className="text-[10px] uppercase text-muted-foreground mb-1">Layers</span>
+                <div className="flex gap-1.5">
+                  <button
                 onClick={() => setShowOpenSpace(!showOpenSpace)}
                 className={`px-3 py-1.5 border-0 rounded text-xs font-medium transition-colors ${
                   showOpenSpace 
@@ -515,7 +636,19 @@ export default function FieldViewer() {
                 }`}
               >
                 Open Space
-              </button>
+                  </button>
+                  <button
+                    onClick={handleToggleAllTracks}
+                    className={`px-3 py-1.5 border-0 rounded text-xs font-medium transition-colors ${
+                      showAllTracks || selectedPlayers.size > 0
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+                        : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                    }`}
+                  >
+                    Player Tracks
+                  </button>
+                </div>
+              </div>
             </>
           )}
         </div>

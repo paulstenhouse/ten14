@@ -22,6 +22,7 @@ export default function ChatInterface() {
   const [fieldDiagramMode, setFieldDiagramMode] = useState<'sidebar' | 'large' | 'fullscreen'>('sidebar')
   const [isMobile, setIsMobile] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [currentPlayDescription, setCurrentPlayDescription] = useState<string>('')
 
   // Detect mobile device (less than 1024px)
   useEffect(() => {
@@ -61,7 +62,7 @@ export default function ChatInterface() {
     const aiMessage: Message = {
       id: `m${Date.now() + 1}`,
       role: 'assistant',
-      content: 'I\'ll show you a standard NFL offensive formation with the Kansas City Chiefs offense. Click the button below to see the field diagram with player positions and routes.',
+      content: 'Here\'s the play analysis you requested:',
       timestamp: new Date(),
       hasFieldDiagram: true
     }
@@ -182,6 +183,7 @@ export default function ChatInterface() {
                   messages={selectedConversation.messages}
                   onToggleFieldDiagram={handleToggleFieldDiagram}
                   fieldDiagramOpenForMessage={fieldDiagramOpenForMessage}
+                  currentPlayDescription={currentPlayDescription}
                 />
               )}
 
@@ -296,7 +298,7 @@ export default function ChatInterface() {
               </div>
             </div>
             <div style={{ flex: 1 }}>
-              <FieldViewer />
+              <FieldViewer onPlayDescriptionChange={setCurrentPlayDescription} />
             </div>
           </div>
         )}
@@ -442,7 +444,7 @@ export default function ChatInterface() {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <FieldViewer />
+            <FieldViewer onPlayDescriptionChange={setCurrentPlayDescription} />
           </div>
         </div>
       )}

@@ -5,12 +5,14 @@ interface ChatMessagesProps {
   messages: Message[]
   onToggleFieldDiagram: (messageId: string) => void
   fieldDiagramOpenForMessage: string | null
+  currentPlayDescription?: string
 }
 
 export default function ChatMessages({ 
   messages, 
   onToggleFieldDiagram,
-  fieldDiagramOpenForMessage 
+  fieldDiagramOpenForMessage,
+  currentPlayDescription 
 }: ChatMessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -51,28 +53,94 @@ export default function ChatMessages({
             <div style={{ whiteSpace: 'pre-wrap' }}>{message.content}</div>
             
             {message.hasFieldDiagram && (
-              <button
-                onClick={() => onToggleFieldDiagram(message.id)}
-                style={{
-                  marginTop: '8px',
-                  padding: '6px 12px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  color: 'white',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
-                }}
-              >
-                {fieldDiagramOpenForMessage === message.id ? '📉 Hide' : '📊 Show'} Field Diagram
-              </button>
+              <>
+                {fieldDiagramOpenForMessage === message.id ? (
+                  <button
+                    onClick={() => onToggleFieldDiagram(message.id)}
+                    style={{
+                      marginTop: '8px',
+                      padding: '8px 12px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      color: 'white',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+                    }}
+                  >
+                    <span>🔽</span> Hide Simulation
+                  </button>
+                ) : (
+                  <div
+                    onClick={() => onToggleFieldDiagram(message.id)}
+                    style={{
+                      marginTop: '12px',
+                      padding: '16px',
+                      background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s',
+                      border: '1px solid rgba(96, 165, 250, 0.3)',
+                      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.25)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.15)'
+                    }}
+                  >
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '8px'
+                    }}>
+                      <span style={{ fontSize: '14px', fontWeight: '600' }}>
+                        🏈 DeJean INT Return - 70 yards
+                      </span>
+                      <span style={{ fontSize: '12px', opacity: 0.8 }}>
+                        ▶ Watch
+                      </span>
+                    </div>
+                    <p style={{
+                      margin: 0,
+                      fontSize: '12px',
+                      opacity: 0.9,
+                      lineHeight: '1.4'
+                    }}>
+                      Experience the game-changing interception return with interactive 3D visualization
+                    </p>
+                  </div>
+                )}
+                
+                {/* Show play description when simulation is open */}
+                {fieldDiagramOpenForMessage === message.id && currentPlayDescription && (
+                  <div style={{
+                    marginTop: '8px',
+                    padding: '8px 12px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    borderLeft: '3px solid #3b82f6'
+                  }}>
+                    {currentPlayDescription}
+                  </div>
+                )}
+              </>
             )}
             
             <div style={{

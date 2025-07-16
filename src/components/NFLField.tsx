@@ -24,6 +24,8 @@ interface NFLFieldProps {
   onTimeChange?: (time: number) => void
   seekTime?: number | null
   showOpenSpace?: boolean
+  selectedPlayers?: Set<string>
+  setSelectedPlayers?: (players: Set<string>) => void
 }
 
 export default function NFLField({ 
@@ -36,7 +38,9 @@ export default function NFLField({
   onFrameChange,
   onTimeChange,
   seekTime,
-  showOpenSpace = false
+  showOpenSpace = false,
+  selectedPlayers,
+  setSelectedPlayers
 }: NFLFieldProps) {
   return (
     <group>
@@ -59,6 +63,8 @@ export default function NFLField({
           onTimeChange={onTimeChange}
           seekTime={seekTime}
           showOpenSpace={showOpenSpace}
+          selectedPlayers={selectedPlayers}
+          setSelectedPlayers={setSelectedPlayers}
         />
       ) : playData ? (
         <PlayersFromData homeTeam={homeTeam} awayTeam={awayTeam} playData={playData} />

@@ -29,13 +29,10 @@ export default function PlayTimeline({
   const totalDuration = frames[frames.length - 1].frame_time_seconds
   const progressPercentage = (currentTime / totalDuration) * 100
   
-  // Ensure progress is 0 when time is 0 or very close to 0
-  const displayProgress = currentTime < 0.01 ? 0 : progressPercentage
-  
   return (
     <div className={`bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg p-4 ${className}`}>
       {/* Play controls */}
-      <div className="flex items-center justify-center gap-2 mb-3">
+      <div className="relative flex items-center justify-center mb-3">
         <button
           onClick={onPlayPause}
           className="px-3 py-1.5 bg-primary text-primary-foreground border-0 rounded text-xs font-medium transition-colors hover:bg-primary/90 flex items-center gap-1.5"
@@ -52,11 +49,11 @@ export default function PlayTimeline({
             </>
           )}
         </button>
-        {/* Show Replay button only when paused and not at the end */}
-        {!isPlaying && !isAtEnd && (
+        {/* Show Replay button only when paused, not at the end, and not at the start */}
+        {!isPlaying && !isAtEnd && currentTime > 0.1 && (
           <button
             onClick={onReset}
-            className="px-3 py-1.5 bg-secondary text-secondary-foreground border-0 rounded text-xs font-medium transition-colors hover:bg-secondary/80 flex items-center gap-1.5"
+            className="absolute right-0 px-3 py-1.5 bg-secondary text-secondary-foreground border-0 rounded text-xs font-medium transition-colors hover:bg-secondary/80 flex items-center gap-1.5"
           >
             <RotateCcw className="w-3 h-3" />
             Replay
@@ -69,11 +66,11 @@ export default function PlayTimeline({
         <div className="relative h-2 bg-white/20 rounded-full overflow-hidden">
           {/* Progress bar */}
           <div 
-            className={`absolute left-0 top-0 h-full bg-primary ${displayProgress === 0 ? '' : 'transition-all duration-100'}`}
-            style={{ width: `${displayProgress}%` }}
+            className={`absolute left-0 top-0 h-full bg-primary ${isPlaying ? 'transition-[width] duration-300 ease-linear' : ''}`}
+            style={{ width: `${progressPercentage}%` }}
           />
           
-          {/* Frame markers */}
+          {/* Frame markers - positioned on top of progress */}
           {frames.map((frame, index) => {
             const position = (frame.frame_time_seconds / totalDuration) * 100
             const isActive = currentTime >= frame.frame_time_seconds
@@ -129,8 +126,8 @@ export default function PlayTimeline({
           })}
         </div>
         
-        {/* Play descriptions from data */}
-        <div className="mt-3 text-sm text-white/80">
+        {/* Play description - single line */}
+        <div className="mt-2 text-xs text-white/70 text-center truncate">
           {(() => {
             // Find the current frame description
             const currentFrame = deJeanInterceptionPlay.plays.find((play, index) => {
@@ -138,16 +135,15 @@ export default function PlayTimeline({
               if (!nextPlay) return currentTime >= play.time
               return currentTime >= play.time && currentTime < nextPlay.time
             })
-            return currentFrame?.description || ""  
+            
+            if (currentFrame?.description) {
+              return currentFrame.description
+            } else if (currentTime < 0.1 && deJeanInterceptionPlay.summary_of_play) {
+              return deJeanInterceptionPlay.summary_of_play
+            }
+            return ""
           })()}
         </div>
-        
-        {/* Overall play summary */}
-        {currentTime < 0.1 && deJeanInterceptionPlay.summary_of_play && (
-          <div className="mt-2 text-xs text-white/60 italic">
-            {deJeanInterceptionPlay.summary_of_play}
-          </div>
-        )}
       </div>
     </div>
   )

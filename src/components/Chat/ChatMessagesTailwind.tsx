@@ -3,17 +3,20 @@ import { useEffect, useRef } from 'react'
 import { Button } from '../ui/button'
 import { Eye, EyeOff } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { deJeanInterceptionPlay } from '../../types/newPlayData'
 
 interface ChatMessagesProps {
   messages: Message[]
   onToggleFieldDiagram: (messageId: string) => void
   fieldDiagramOpenForMessage: string | null
+  currentPlayDescription?: string
 }
 
 export default function ChatMessages({ 
   messages, 
   onToggleFieldDiagram,
-  fieldDiagramOpenForMessage 
+  fieldDiagramOpenForMessage,
+  currentPlayDescription 
 }: ChatMessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -36,41 +39,61 @@ export default function ChatMessages({
           )}
         >
           <div className={cn(
-            "max-w-[70%] rounded-xl px-4 py-3",
-            message.role === 'user' 
-              ? 'bg-primary text-primary-foreground' 
-              : 'bg-secondary text-secondary-foreground'
+            "max-w-[70%]",
+            message.role === 'user' && "rounded-xl px-4 py-3 bg-secondary text-secondary-foreground"
           )}>
-            <div className="whitespace-pre-wrap text-sm">{message.content}</div>
+            <div className={cn(
+              "whitespace-pre-wrap text-sm",
+              message.role === 'assistant' && "text-foreground"
+            )}>
+              {message.content}
+            </div>
             
             {message.hasFieldDiagram && (
-              <Button
-                onClick={() => onToggleFieldDiagram(message.id)}
-                variant="outline"
-                size="sm"
-                className="mt-2 h-8 hover:bg-primary/10 dark:hover:bg-primary/20"
-              >
-                {fieldDiagramOpenForMessage === message.id ? (
-                  <>
-                    <EyeOff className="mr-2 h-3 w-3" />
-                    Hide Simulation
-                  </>
-                ) : (
-                  <>
-                    <Eye className="mr-2 h-3 w-3" />
-                    View Simulation
-                  </>
+              <>
+                <div
+                  onClick={() => onToggleFieldDiagram(message.id)}
+                  className="mt-3 p-4 bg-gradient-to-br from-red-600 to-red-700 dark:from-red-700 dark:to-red-800 rounded-lg cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg border border-red-500/20"
+                >
+                  <div className="mb-2">
+                    <span className="text-sm font-semibold text-white">
+                      🏈 DeJean INT Return - 70 yards
+                    </span>
+                  </div>
+                  <p className="text-xs text-white/90 leading-relaxed mb-3">
+                    {deJeanInterceptionPlay.summary_of_play}
+                  </p>
+                  <div className="flex justify-end">
+                    <button 
+                      className="px-3 py-1.5 bg-white text-red-700 rounded-md text-xs font-medium flex items-center gap-1.5 hover:bg-gray-100 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onToggleFieldDiagram(message.id)
+                      }}
+                    >
+                      {fieldDiagramOpenForMessage === message.id ? (
+                        <>
+                          <EyeOff className="h-3 w-3" />
+                          Hide
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="h-3 w-3" />
+                          Watch
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Show play description when simulation is open */}
+                {fieldDiagramOpenForMessage === message.id && currentPlayDescription && (
+                  <div className="mt-2 p-3 bg-secondary/50 rounded-md border-l-4 border-red-600">
+                    <p className="text-sm">{currentPlayDescription}</p>
+                  </div>
                 )}
-              </Button>
+              </>
             )}
-            
-            <div className="mt-1 text-xs opacity-50">
-              {new Date(message.timestamp).toLocaleTimeString('en-US', { 
-                hour: 'numeric', 
-                minute: '2-digit',
-                hour12: true 
-              })}
-            </div>
           </div>
         </div>
       ))}

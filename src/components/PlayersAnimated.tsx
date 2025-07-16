@@ -18,6 +18,8 @@ interface PlayersAnimatedProps {
   playbackSpeed?: number
   seekTime?: number | null
   showOpenSpace?: boolean
+  selectedPlayers?: Set<string>
+  setSelectedPlayers?: (players: Set<string>) => void
 }
 
 export default function PlayersAnimated({ 
@@ -30,14 +32,15 @@ export default function PlayersAnimated({
   onTimeChange,
   playbackSpeed = 1,
   seekTime,
-  showOpenSpace = false
+  showOpenSpace = false,
+  selectedPlayers = new Set<string>(),
+  setSelectedPlayers = () => {}
 }: PlayersAnimatedProps) {
   const { camera } = useThree()
   
   const [currentFrameIndex, setCurrentFrameIndex] = useState(0)
   const [interpolationProgress, setInterpolationProgress] = useState(0)
   const [elapsedTime, setElapsedTime] = useState(0)
-  const [selectedPlayers, setSelectedPlayers] = useState<Set<string>>(new Set())
   const [, forceUpdate] = useState({})
   const elapsedTimeRef = useRef(0)
   const playerHeight = 1.8
@@ -223,15 +226,13 @@ export default function PlayersAnimated({
           onClick={(e) => {
             e.stopPropagation()
             const playerKey = `${team}-${playerId}`
-            setSelectedPlayers(prev => {
-              const newSet = new Set(prev)
-              if (newSet.has(playerKey)) {
-                newSet.delete(playerKey)
-              } else {
-                newSet.add(playerKey)
-              }
-              return newSet
-            })
+            const newSet = new Set(selectedPlayers)
+            if (newSet.has(playerKey)) {
+              newSet.delete(playerKey)
+            } else {
+              newSet.add(playerKey)
+            }
+            setSelectedPlayers(newSet)
           }}
           onPointerOver={(e) => {
             e.stopPropagation()

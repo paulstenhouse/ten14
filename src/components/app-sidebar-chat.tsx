@@ -91,7 +91,7 @@ export function AppSidebarChat({
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
-        <div className="flex flex-col items-start px-4 pt-2 mb-2">
+        <div className="flex flex-col items-start px-1 pt-2 mb-2">
           <img 
             src="https://sportgpt.pages.dev/assets/ten14logo-AuV9iT5b.png" 
             alt="Ten14 Logo" 
