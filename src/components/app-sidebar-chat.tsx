@@ -91,32 +91,19 @@ export function AppSidebarChat({
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1.5 mb-2">
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-4"
-            >
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-          </div>
-          <div className="flex flex-col gap-0.5 leading-none">
-            <span className="font-semibold">NFL Field Demo</span>
-            <span className="text-xs text-muted-foreground">Interactive 3D Viewer</span>
-          </div>
+        <div className="flex flex-col items-start px-4 pt-2 mb-2">
+          <img 
+            src="https://sportgpt.pages.dev/assets/ten14logo-AuV9iT5b.png" 
+            alt="Ten14 Logo" 
+            className="w-[125px] h-auto"
+          />
+          <span className="text-lg font-semibold">SportsGPT</span>
         </div>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={onNewConversation} className="w-full">
+            <SidebarMenuButton onClick={onNewConversation} className="w-full justify-start">
               <Plus className="size-4" />
-              <span>New Conversation</span>
+              <span>New Chat</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -127,14 +114,14 @@ export function AppSidebarChat({
             <SidebarGroupLabel className="px-4 text-xs font-medium text-muted-foreground">
               {period}
             </SidebarGroupLabel>
-            <SidebarMenu className="gap-1 px-2">
+            <SidebarMenu className="gap-1">
               {convs.map(conversation => (
                 <SidebarMenuItem key={conversation.id}>
                   <SidebarMenuButton
                     onClick={() => onSelectConversation(conversation.id)}
                     isActive={selectedId === conversation.id}
                     tooltip={conversation.title}
-                    className="w-full justify-start h-auto py-2 px-3"
+                    className="w-full justify-start h-auto py-2 px-4"
                   >
                     <div className="flex items-center justify-between w-full gap-2">
                       <span className="truncate text-sm">

@@ -7,6 +7,9 @@ export default {
   ],
   theme: {
   	extend: {
+      fontFamily: {
+        'sans': ['Funnel Sans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', 'sans-serif'],
+      },
       screens: {
         'mobile': {'max': '727px'},
         'desktop': '728px',

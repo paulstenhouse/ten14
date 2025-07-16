@@ -7,6 +7,7 @@ import GoalPosts from './GoalPosts'
 import Players from './Players'
 import Playbook from './Playbook'
 import Dome from './Dome'
+import FieldLogo from './FieldLogo'
 import { NFLTeam } from '../data/nflTeams'
 
 interface NFLFieldProps {
@@ -19,6 +20,7 @@ export default function NFLField({ homeTeam, awayTeam }: NFLFieldProps) {
     <group>
       <Dome />
       <FieldSurface homeTeam={homeTeam} awayTeam={awayTeam} />
+      <FieldLogo />
       <FieldLines />
       <HashMarks />
       <FieldNumbers />
