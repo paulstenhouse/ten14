@@ -178,7 +178,7 @@ export default function ChatInterfaceInset() {
     const aiMessage: Message = {
       id: `m${Date.now() + 1}`,
       role: 'assistant',
-      content: 'I\'ll show you a standard NFL offensive formation with the Kansas City Chiefs offense. Click the button below to see the simulation with player positions and routes.',
+      content: 'I\'ll show you the moment Cooper DeJean intercepted Patrick Mahomes\' pass - a pivotal play from the Chiefs vs Eagles game. Click the button below to see the exact player positions at the moment of the interception.',
       timestamp: new Date(),
       hasFieldDiagram: true
     }
@@ -246,10 +246,10 @@ export default function ChatInterfaceInset() {
                           <div className="flex h-full items-center justify-center p-6 text-center">
                             <div className="max-w-lg">
                               <h3 className="mb-3 text-2xl font-semibold text-foreground">
-                                NFL Field Visualization Demo
+                                NFL Play Visualization Demo
                               </h3>
                               <p className="text-base leading-relaxed text-muted-foreground">
-                                Type any message below to see an interactive 3D NFL simulation with player positions and formations.
+                                Experience Cooper DeJean's game-changing interception! Type any message below to see the exact player positions from this pivotal Chiefs vs Eagles moment.
                               </p>
                             </div>
                           </div>
@@ -328,10 +328,10 @@ export default function ChatInterfaceInset() {
                         <div className="flex h-full items-center justify-center p-6 text-center">
                           <div className="max-w-lg">
                             <h3 className="mb-3 text-2xl font-semibold text-foreground">
-                              NFL Field Visualization Demo
+                              NFL Play Visualization Demo
                             </h3>
                             <p className="text-base leading-relaxed text-muted-foreground">
-                              Type any message below to see an interactive 3D NFL simulation with player positions and formations.
+                              Experience Cooper DeJean's game-changing interception! Type any message below to see the exact player positions from this pivotal Chiefs vs Eagles moment.
                             </p>
                           </div>
                         </div>

@@ -3,7 +3,10 @@ import { OrbitControls } from "@react-three/drei"
 import { useRef, useState, useEffect } from "react"
 import * as THREE from "three"
 import NFLField from "./NFLField"
+import PlayTimeline from "./PlayTimeline"
 import { NFL_TEAMS, NFLTeam } from "../data/nflTeams"
+import { deJeanInterceptionData } from "../types/playData"
+import { deJeanInterceptionPlay, convertToAnimationFrames, createPlayerInfo } from "../types/newPlayData"
 
 // Camera animation component (copied from App.tsx)
 function CameraController({ 
@@ -11,13 +14,19 @@ function CameraController({
   animationTrigger, 
   onAnimationComplete, 
   controlsRef,
-  isAnimating 
+  isAnimating,
+  animationFrames,
+  currentFrameIndex,
+  playData
 }: { 
   targetView: number; 
   animationTrigger: number; 
   onAnimationComplete: () => void; 
   controlsRef: any;
   isAnimating: boolean;
+  animationFrames?: any;
+  currentFrameIndex?: number;
+  playData?: any;
 }) {
   const { camera } = useThree()
   const lastTriggerRef = useRef(0)
@@ -29,20 +38,51 @@ function CameraController({
   }>()
 
   const getQBPosition = () => {
-    const qbX = -5 * 0.9144
-    const qbZ = 0 * 0.9144
-    return new THREE.Vector3(qbX, 1, qbZ)
+    // Get QB position from animation data or static data
+    if (animationFrames && currentFrameIndex >= 0) {
+      const frame = animationFrames[currentFrameIndex]
+      const qb = frame.offense_kc.find(p => p.id === 1) // Mahomes is id 1
+      if (qb) {
+        return new THREE.Vector3(qb.pos[1], 1, qb.pos[0]) // Swap coordinates
+      }
+    } else if (playData) {
+      const qb = playData.offense_kc.find(p => p.position === 'QB')
+      if (qb) {
+        return new THREE.Vector3(qb.z, 1, qb.x) // Swap coordinates
+      }
+    }
+    // Fallback position
+    return new THREE.Vector3(28, 1, -1)
   }
 
   const getMLBPosition = () => {
-    const mlbX = 0 * 0.9144
-    const mlbZ = 0 * 0.9144
-    return new THREE.Vector3(mlbX, 1.5, mlbZ)
+    // Get middle linebacker position from animation data
+    if (animationFrames && currentFrameIndex >= 0) {
+      const frame = animationFrames[currentFrameIndex]
+      const mlb = frame.defense_phi.find(p => p.id === 31 || p.id === 32) // LBs
+      if (mlb) {
+        return new THREE.Vector3(mlb.pos[1], 1.5, mlb.pos[0]) // Swap coordinates
+      }
+    } else if (playData) {
+      const mlb = playData.defense_phi.find(p => p.position === 'LB')
+      if (mlb) {
+        return new THREE.Vector3(mlb.z, 1.5, mlb.x) // Swap coordinates
+      }
+    }
+    // Fallback position
+    return new THREE.Vector3(20, 1.5, 0)
   }
 
   const getCameraPresets = () => {
     const qbPos = getQBPosition()
     const mlbPos = getMLBPosition()
+    
+    // In the coordinate system:
+    // - Positive z points toward Eagles endzone
+    // - Chiefs (offense) start at z≈28 (in their own territory)  
+    // - Eagles (defense) are at z≈15-20
+    // - So Chiefs are facing negative z (toward Eagles endzone which is at negative z)
+    const offenseFacingNegativeZ = true
 
     return [
       {
@@ -52,18 +92,41 @@ function CameraController({
       },
       {
         name: "Behind QB",
-        position: new THREE.Vector3(qbPos.x - 15, 8, qbPos.z),
-        target: qbPos,
+        // Camera should be behind QB based on which way they're facing
+        position: new THREE.Vector3(
+          qbPos.x + (offenseFacingNegativeZ ? 15 : -15), 
+          8, 
+          qbPos.z
+        ),
+        target: new THREE.Vector3(
+          qbPos.x - (offenseFacingNegativeZ ? 5 : -5),
+          qbPos.y,
+          qbPos.z
+        ),
       },
       {
         name: "Defense POV",
-        position: new THREE.Vector3(mlbPos.x + 15, mlbPos.y + 10, mlbPos.z),
+        // Camera should be behind defense looking at offense
+        position: new THREE.Vector3(
+          mlbPos.x - (offenseFacingNegativeZ ? 15 : -15), 
+          mlbPos.y + 10, 
+          mlbPos.z
+        ),
         target: qbPos,
       },
       {
         name: "Bird's Eye",
-        position: new THREE.Vector3(qbPos.x - 5, 30, qbPos.z), 
-        target: qbPos,
+        // Position camera above field from same side as sideline view
+        position: new THREE.Vector3(
+          qbPos.x, 
+          50, 
+          qbPos.z + 15 // Positioned on same side as sideline view
+        ), 
+        target: new THREE.Vector3(
+          qbPos.x,
+          0,
+          qbPos.z - 5 // Look slightly ahead of QB
+        ),
       }
     ]
   }
@@ -104,10 +167,16 @@ function CameraController({
     const fromView = getCameraPresets().findIndex(preset => 
       preset.position.distanceTo(fromPosition) < 1
     )
-    // Check if camera is crossing from one side of the field to the other (crossing x=0)
-    const toPosition = getCameraPresets()[animationRef.current.toView].position
-    const needsSidelineSwing = (fromPosition.x < 0 && toPosition.x > 0) || 
-                              (fromPosition.x > 0 && toPosition.x < 0)
+    const toView = animationRef.current.toView
+    const toPosition = getCameraPresets()[toView].position
+    
+    // Check if we need a sideline swing:
+    // 1. When crossing from one side to the other (x-axis)
+    // 2. When switching between Behind QB (1) and Defense POV (2)
+    const isQBToDefense = (fromView === 1 && toView === 2) || (fromView === 2 && toView === 1)
+    const crossingXAxis = (fromPosition.x < -5 && toPosition.x > 5) || 
+                         (fromPosition.x > 5 && toPosition.x < -5)
+    const needsSidelineSwing = isQBToDefense || crossingXAxis
     
     // Use longer duration for sideline swing transitions
     const duration = needsSidelineSwing ? 1.8 : 1.2
@@ -190,7 +259,18 @@ export default function FieldViewer() {
   const controlsRef = useRef<any>(null)
   
   const [homeTeam, setHomeTeam] = useState<NFLTeam>(NFL_TEAMS.find(t => t.abbreviation === "KC")!)
-  const [awayTeam, setAwayTeam] = useState<NFLTeam>(NFL_TEAMS.find(t => t.abbreviation === "LAR")!)
+  const [awayTeam, setAwayTeam] = useState<NFLTeam>(NFL_TEAMS.find(t => t.abbreviation === "PHI")!)
+  const showRealPlay = true // Always show DeJean INT data
+  const [isPlayingAnimation, setIsPlayingAnimation] = useState(false)
+  const [animationMode, setAnimationMode] = useState(true) // Always start in animation mode
+  const [currentAnimationFrame, setCurrentAnimationFrame] = useState(0)
+  const [currentAnimationTime, setCurrentAnimationTime] = useState(0)
+  const [seekTime, setSeekTime] = useState<number | null>(0) // Start at first frame
+  const [showOpenSpace, setShowOpenSpace] = useState(false)
+  const [isAtEnd, setIsAtEnd] = useState(false)
+  
+  // Convert new format to old format for compatibility
+  const animationFrames = convertToAnimationFrames(deJeanInterceptionPlay)
   
   // Check if dark mode is active
   const [isDarkMode, setIsDarkMode] = useState(false)
@@ -246,6 +326,70 @@ export default function FieldViewer() {
       });
     }
   }
+  
+  const handlePlayAnimation = () => {
+    // If at end and pressing play, reset and start playing
+    if (isAtEnd && !isPlayingAnimation) {
+      // Immediately reset the time to clear the timeline
+      setCurrentAnimationTime(0)
+      setCurrentAnimationFrame(0)
+      setIsAtEnd(false)
+      // Set seekTime to 0 to trigger reset in PlayersAnimated
+      setSeekTime(0)
+      // Use double requestAnimationFrame to ensure state updates are processed
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setSeekTime(null)
+          setIsPlayingAnimation(true)
+        })
+      })
+    } else {
+      setIsPlayingAnimation(!isPlayingAnimation)
+      setSeekTime(null)
+    }
+    
+    if (!animationMode) {
+      setAnimationMode(true)
+    }
+  }
+  
+  const handleResetAnimation = () => {
+    setIsPlayingAnimation(false)
+    setAnimationMode(true) // Keep animation mode active
+    setCurrentAnimationFrame(0)
+    setCurrentAnimationTime(0)
+    setSeekTime(0)
+    setIsAtEnd(false)
+  }
+  
+  const onPlayAnimationComplete = () => {
+    setIsPlayingAnimation(false)
+    setIsAtEnd(true)
+  }
+  
+  const onAnimationFrameChange = (frameIndex: number) => {
+    setCurrentAnimationFrame(frameIndex)
+    // Check if we're at the last frame
+    if (frameIndex >= animationFrames.length - 1) {
+      setIsAtEnd(true)
+    } else {
+      setIsAtEnd(false)
+    }
+  }
+  
+  const onAnimationTimeChange = (time: number) => {
+    setCurrentAnimationTime(time)
+  }
+  
+  const handleTimelineSelect = (time: number) => {
+    setSeekTime(time)
+    setCurrentAnimationTime(time)
+    setIsAtEnd(false) // Clear the end state when seeking
+    // Don't auto-play when seeking
+    if (!isPlayingAnimation) {
+      setAnimationMode(true)
+    }
+  }
 
   return (
     <div className="w-full h-full bg-white dark:bg-zinc-900 relative">
@@ -261,7 +405,18 @@ export default function FieldViewer() {
         <directionalLight position={[0, 100, 0]} intensity={0.8} />
         <directionalLight position={[50, 50, 25]} intensity={0.3} />
         
-        <NFLField homeTeam={homeTeam} awayTeam={awayTeam} />
+        <NFLField 
+          homeTeam={homeTeam} 
+          awayTeam={awayTeam} 
+          playData={showRealPlay && !animationMode ? deJeanInterceptionData : undefined}
+          animationFrames={showRealPlay && animationMode ? animationFrames : undefined}
+          isAnimating={isPlayingAnimation}
+          onAnimationComplete={onPlayAnimationComplete}
+          onFrameChange={onAnimationFrameChange}
+          onTimeChange={onAnimationTimeChange}
+          seekTime={seekTime}
+          showOpenSpace={showOpenSpace}
+        />
         
         <OrbitControls
           ref={controlsRef}
@@ -279,20 +434,36 @@ export default function FieldViewer() {
           onAnimationComplete={onAnimationComplete}
           controlsRef={controlsRef}
           isAnimating={isAnimating}
+          animationFrames={showRealPlay && animationMode ? animationFrames : undefined}
+          currentFrameIndex={currentAnimationFrame}
+          playData={showRealPlay && !animationMode ? deJeanInterceptionData : undefined}
         />
       </Canvas>
+
+      {/* Timeline - always visible */}
+      <div className="absolute top-4 left-4 right-4 z-10">
+        <PlayTimeline
+          frames={animationFrames}
+          currentTime={currentAnimationTime}
+          isPlaying={isPlayingAnimation}
+          isAtEnd={isAtEnd}
+          onTimeSelect={handleTimelineSelect}
+          onPlayPause={handlePlayAnimation}
+          onReset={handleResetAnimation}
+        />
+      </div>
 
       {/* Controls overlay */}
       <div className="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-sm p-3 border-t border-gray-200 dark:border-zinc-800">
         <div className="flex items-center justify-center gap-2 flex-wrap">
           {/* Camera buttons */}
           <div className="flex gap-1.5">
-            {['Sideline', 'Behind QB', 'Bird\'s Eye', 'Defense POV'].map((view, index) => {
-              const viewIndex = view === 'Bird\'s Eye' ? 3 : view === 'Defense POV' ? 2 : ['Sideline', 'Behind QB'].indexOf(view);
+            {['Sideline', 'Behind QB', 'Defense POV', 'Bird\'s Eye'].map((view, index) => {
+              // Direct index mapping since buttons are now in same order as camera presets
               return (
                 <button
                 key={view}
-                onClick={() => moveCameraToPosition(viewIndex)}
+                onClick={() => moveCameraToPosition(index)}
                 disabled={isAnimating}
                 className={`px-3 py-1.5 bg-secondary text-secondary-foreground border-0 rounded text-xs font-medium transition-colors hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed`}
               >
@@ -330,6 +501,23 @@ export default function FieldViewer() {
               ))}
             </select>
           </div>
+          
+          {/* Open Space toggle */}
+          {showRealPlay && animationMode && (
+            <>
+              <div className="w-px h-5 bg-border" />
+              <button
+                onClick={() => setShowOpenSpace(!showOpenSpace)}
+                className={`px-3 py-1.5 border-0 rounded text-xs font-medium transition-colors ${
+                  showOpenSpace 
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                }`}
+              >
+                Open Space
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
