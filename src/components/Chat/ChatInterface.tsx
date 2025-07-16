@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Conversation, Message } from '../../types/chat'
 import ConversationSidebar from './ConversationSidebar'
 import ChatMessages from './ChatMessages'
@@ -6,55 +6,32 @@ import ChatInput from './ChatInput'
 import FieldViewer from '../FieldViewer'
 
 export default function ChatInterface() {
-  // Mock data for demonstration
+  // Start with empty conversation for demo
   const [conversations, setConversations] = useState<Conversation[]>([
     {
       id: '1',
-      title: 'NFL Play Analysis',
-      messages: [
-        {
-          id: 'm1',
-          role: 'user',
-          content: 'Can you show me a typical NFL offensive formation?',
-          timestamp: new Date('2024-01-15T10:00:00')
-        },
-        {
-          id: 'm2',
-          role: 'assistant',
-          content: 'I\'ll show you a standard NFL offensive formation with the Kansas City Chiefs offense. Click the button below to see the field diagram with player positions and routes.',
-          timestamp: new Date('2024-01-15T10:00:30'),
-          hasFieldDiagram: true
-        }
-      ],
-      createdAt: new Date('2024-01-15T10:00:00'),
-      updatedAt: new Date('2024-01-15T10:00:30')
-    },
-    {
-      id: '2',
-      title: 'Defensive Strategies',
-      messages: [
-        {
-          id: 'm3',
-          role: 'user',
-          content: 'What defensive formations work best against passing plays?',
-          timestamp: new Date('2024-01-15T11:00:00')
-        },
-        {
-          id: 'm4',
-          role: 'assistant',
-          content: 'For defending against passing plays, teams often use nickel or dime formations with extra defensive backs. Let me show you a typical defensive setup.',
-          timestamp: new Date('2024-01-15T11:00:30'),
-          hasFieldDiagram: true
-        }
-      ],
-      createdAt: new Date('2024-01-15T11:00:00'),
-      updatedAt: new Date('2024-01-15T11:00:30')
+      title: 'New Conversation',
+      messages: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   ])
 
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>('1')
-  const [fieldDiagramOpenForMessage, setFieldDiagramOpenForMessage] = useState<string | null>('m2') // Start with field open for message m2
+  const [fieldDiagramOpenForMessage, setFieldDiagramOpenForMessage] = useState<string | null>(null)
   const [fieldDiagramMode, setFieldDiagramMode] = useState<'sidebar' | 'large' | 'fullscreen'>('sidebar')
+  const [isMobile, setIsMobile] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  // Detect mobile device (less than 1024px)
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const selectedConversation = conversations.find(c => c.id === selectedConversationId)
 
@@ -80,13 +57,13 @@ export default function ChatInterface() {
       timestamp: new Date()
     }
 
-    // Simulate AI response
+    // Demo response - always show the field diagram
     const aiMessage: Message = {
       id: `m${Date.now() + 1}`,
       role: 'assistant',
-      content: 'I understand your question about the play. Let me analyze the field formation for you.',
+      content: 'I\'ll show you a standard NFL offensive formation with the Kansas City Chiefs offense. Click the button below to see the field diagram with player positions and routes.',
       timestamp: new Date(),
-      hasFieldDiagram: content.toLowerCase().includes('show') || content.toLowerCase().includes('field')
+      hasFieldDiagram: true
     }
 
     setConversations(convs => 
@@ -124,8 +101,8 @@ export default function ChatInterface() {
         color: 'white',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
       }}>
-        {/* Conversation Sidebar */}
-        {showSidebar && (
+        {/* Conversation Sidebar (desktop only) */}
+        {showSidebar && !isMobile && (
           <ConversationSidebar
             conversations={conversations}
             selectedId={selectedConversationId}
@@ -148,8 +125,30 @@ export default function ChatInterface() {
               <div style={{
                 padding: '16px 24px',
                 borderBottom: '1px solid #333',
-                backgroundColor: '#1a1a1a'
+                backgroundColor: '#1a1a1a',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px'
               }}>
+                {isMobile && (
+                  <button
+                    onClick={() => setSidebarOpen(true)}
+                    style={{
+                      padding: '8px',
+                      backgroundColor: 'transparent',
+                      color: '#fff',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M3 12h18M3 6h18M3 18h18" />
+                    </svg>
+                  </button>
+                )}
                 <h2 style={{
                   fontSize: '18px',
                   fontWeight: '600',
@@ -160,11 +159,31 @@ export default function ChatInterface() {
               </div>
 
               {/* Messages */}
-              <ChatMessages
-                messages={selectedConversation.messages}
-                onToggleFieldDiagram={handleToggleFieldDiagram}
-                fieldDiagramOpenForMessage={fieldDiagramOpenForMessage}
-              />
+              {selectedConversation.messages.length === 0 ? (
+                <div style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '24px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ maxWidth: '500px' }}>
+                    <h3 style={{ fontSize: '24px', marginBottom: '12px', color: '#fff' }}>
+                      NFL Field Visualization Demo
+                    </h3>
+                    <p style={{ fontSize: '16px', color: '#888', lineHeight: '1.5' }}>
+                      Type any message below to see an interactive 3D NFL field diagram with player positions and formations.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <ChatMessages
+                  messages={selectedConversation.messages}
+                  onToggleFieldDiagram={handleToggleFieldDiagram}
+                  fieldDiagramOpenForMessage={fieldDiagramOpenForMessage}
+                />
+              )}
 
               {/* Input */}
               <ChatInput onSendMessage={handleSendMessage} />
@@ -182,8 +201,8 @@ export default function ChatInterface() {
           )}
         </div>
 
-        {/* Field Diagram Panel - sidebar or large mode */}
-        {fieldDiagramOpenForMessage && fieldDiagramMode !== 'fullscreen' && (
+        {/* Field Diagram Panel - sidebar or large mode (desktop only) */}
+        {fieldDiagramOpenForMessage && fieldDiagramMode !== 'fullscreen' && !isMobile && (
           <div style={{
             width: fieldWidth,
             flex: fieldWidth ? undefined : 1,
@@ -283,8 +302,76 @@ export default function ChatInterface() {
         )}
       </div>
 
-      {/* Fullscreen Field Diagram */}
-      {fieldDiagramOpenForMessage && fieldDiagramMode === 'fullscreen' && (
+      {/* Mobile Sidebar Overlay */}
+      {isMobile && sidebarOpen && (
+        <>
+          {/* Backdrop */}
+          <div 
+            onClick={() => setSidebarOpen(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 999
+            }}
+          />
+          
+          {/* Sidebar */}
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            bottom: 0,
+            width: '280px',
+            backgroundColor: '#0a0a0a',
+            zIndex: 1000,
+            transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
+            transition: 'transform 0.3s ease-in-out',
+            borderRight: '1px solid #333'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '16px',
+              borderBottom: '1px solid #333'
+            }}>
+              <h3 style={{ margin: 0, fontSize: '16px' }}>Conversations</h3>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                style={{
+                  padding: '4px',
+                  backgroundColor: 'transparent',
+                  color: '#888',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '20px'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <ConversationSidebar
+              conversations={conversations}
+              selectedId={selectedConversationId}
+              onSelectConversation={(id) => {
+                setSelectedConversationId(id)
+                setSidebarOpen(false)
+              }}
+              onNewConversation={() => {
+                handleNewConversation()
+                setSidebarOpen(false)
+              }}
+            />
+          </div>
+        </>
+      )}
+
+      {/* Fullscreen Field Diagram or Mobile Sheet */}
+      {fieldDiagramOpenForMessage && (fieldDiagramMode === 'fullscreen' || isMobile) && (
         <div style={{
           position: 'fixed',
           top: 0,
@@ -309,36 +396,38 @@ export default function ChatInterface() {
               fontWeight: '600',
               margin: 0
             }}>
-              Field Diagram - Fullscreen
+              Field Diagram {!isMobile && '- Fullscreen'}
             </h3>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <button
-                onClick={() => setFieldDiagramMode('sidebar')}
-                style={{
-                  padding: '4px 8px',
-                  backgroundColor: 'transparent',
-                  color: '#888',
-                  border: '1px solid #444',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '12px'
-                }}
-              >
-                Exit Fullscreen
-              </button>
+              {!isMobile && (
+                <button
+                  onClick={() => setFieldDiagramMode('sidebar')}
+                  style={{
+                    padding: '4px 8px',
+                    backgroundColor: 'transparent',
+                    color: '#888',
+                    border: '1px solid #444',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                >
+                  Exit Fullscreen
+                </button>
+              )}
               <button
                 onClick={() => {
                   setFieldDiagramOpenForMessage(null)
                   setFieldDiagramMode('sidebar')
                 }}
                 style={{
-                  padding: '4px 8px',
+                  padding: isMobile ? '8px 12px' : '4px 8px',
                   backgroundColor: 'transparent',
                   color: '#888',
                   border: 'none',
                   borderRadius: '4px',
                   cursor: 'pointer',
-                  fontSize: '20px',
+                  fontSize: isMobile ? '24px' : '20px',
                   lineHeight: 1
                 }}
                 onMouseEnter={(e) => {

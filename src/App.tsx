@@ -1,5 +1,10 @@
-import ChatInterface from "./components/Chat/ChatInterface"
+import ChatInterfaceInset from "./components/Chat/ChatInterfaceInset"
+import { ThemeProvider } from "./contexts/ThemeContext"
 
 export default function App() {
-  return <ChatInterface />
+  return (
+    <ThemeProvider>
+      <ChatInterfaceInset />
+    </ThemeProvider>
+  )
 }

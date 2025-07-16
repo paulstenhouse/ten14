@@ -98,7 +98,19 @@ function CameraController({
     }
 
     const elapsed = performance.now() / 1000 - animationRef.current.startTime
-    const duration = 1.2
+    
+    // Check if we're switching between offensive and defensive views for smoother animation
+    const fromPosition = animationRef.current.currentPosition!
+    const fromView = getCameraPresets().findIndex(preset => 
+      preset.position.distanceTo(fromPosition) < 1
+    )
+    // Check if camera is crossing from one side of the field to the other (crossing x=0)
+    const toPosition = getCameraPresets()[animationRef.current.toView].position
+    const needsSidelineSwing = (fromPosition.x < 0 && toPosition.x > 0) || 
+                              (fromPosition.x > 0 && toPosition.x < 0)
+    
+    // Use longer duration for sideline swing transitions
+    const duration = needsSidelineSwing ? 1.8 : 1.2
     const progress = Math.min(elapsed / duration, 1)
 
     const easeInOutCubic = (t: number) => {
@@ -106,12 +118,48 @@ function CameraController({
     }
     const easedProgress = easeInOutCubic(progress)
 
-    const fromPosition = animationRef.current.currentPosition!
     const fromTarget = animationRef.current.currentTarget!
     const toPreset = getCameraPresets()[animationRef.current.toView]
 
-    const newPosition = fromPosition.clone().lerp(toPreset.position, easedProgress)
-    const newTarget = fromTarget.clone().lerp(toPreset.target, easedProgress)
+    let newPosition: THREE.Vector3
+    let newTarget: THREE.Vector3
+
+    if (needsSidelineSwing) {
+      // Create a smooth bezier curve path around the sideline without zooming out
+      const avgHeight = (fromPosition.y + toPreset.position.y) / 2
+      const midPoint1 = new THREE.Vector3(
+        fromPosition.x * 0.7,
+        avgHeight, // Keep same height
+        25 // Closer to the sideline
+      )
+      const midPoint2 = new THREE.Vector3(
+        toPreset.position.x * 0.7,
+        avgHeight, // Keep same height
+        25 // Stay close to the sideline
+      )
+      
+      // Calculate bezier curve position
+      const t = easedProgress
+      const t2 = t * t
+      const t3 = t2 * t
+      const mt = 1 - t
+      const mt2 = mt * mt
+      const mt3 = mt2 * mt
+      
+      // Cubic bezier curve: B(t) = (1-t)³P₀ + 3(1-t)²tP₁ + 3(1-t)t²P₂ + t³P₃
+      newPosition = new THREE.Vector3()
+        .addScaledVector(fromPosition, mt3)
+        .addScaledVector(midPoint1, 3 * mt2 * t)
+        .addScaledVector(midPoint2, 3 * mt * t2)
+        .addScaledVector(toPreset.position, t3)
+      
+      // Smooth target interpolation
+      newTarget = fromTarget.clone().lerp(toPreset.target, easedProgress)
+    } else {
+      // Normal linear interpolation for other transitions
+      newPosition = fromPosition.clone().lerp(toPreset.position, easedProgress)
+      newTarget = fromTarget.clone().lerp(toPreset.target, easedProgress)
+    }
 
     camera.position.copy(newPosition)
     camera.lookAt(newTarget)
@@ -143,6 +191,26 @@ export default function FieldViewer() {
   
   const [homeTeam, setHomeTeam] = useState<NFLTeam>(NFL_TEAMS.find(t => t.abbreviation === "KC")!)
   const [awayTeam, setAwayTeam] = useState<NFLTeam>(NFL_TEAMS.find(t => t.abbreviation === "LAR")!)
+  
+  // Check if dark mode is active
+  const [isDarkMode, setIsDarkMode] = useState(false)
+  
+  useEffect(() => {
+    const checkDarkMode = () => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'))
+    }
+    
+    checkDarkMode()
+    
+    // Watch for theme changes
+    const observer = new MutationObserver(checkDarkMode)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    })
+    
+    return () => observer.disconnect()
+  }, [])
 
   const [controlsProps, setControlsProps] = useState({
     minPolarAngle: 0.1,
@@ -180,7 +248,7 @@ export default function FieldViewer() {
   }
 
   return (
-    <div style={{ width: '100%', height: '100%', backgroundColor: '#0a0a0a', position: 'relative' }}>
+    <div className="w-full h-full bg-white dark:bg-zinc-900 relative">
       <Canvas
         camera={{
           position: [-4.5 * 0.9144 - 15, 8, 0], // Behind QB position
@@ -188,7 +256,7 @@ export default function FieldViewer() {
         }}
         style={{ width: '100%', height: '100%' }}
       >
-        <fog attach="fog" args={['#1a1a1a', 50, 150]} />
+        <fog attach="fog" args={[isDarkMode ? '#18181b' : '#f5f5f5', 100, 250]} />
         <ambientLight intensity={0.4} />
         <directionalLight position={[0, 100, 0]} intensity={0.8} />
         <directionalLight position={[50, 50, 25]} intensity={0.3} />
@@ -215,61 +283,33 @@ export default function FieldViewer() {
       </Canvas>
 
       {/* Controls overlay */}
-      <div style={{ 
-        position: 'absolute', 
-        bottom: 0, 
-        left: 0, 
-        right: 0, 
-        backgroundColor: 'rgba(0, 0, 0, 0.8)', 
-        padding: '12px', 
-        borderTop: '1px solid rgba(255, 255, 255, 0.1)'
-      }}>
-        <div style={{ 
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
-          flexWrap: 'wrap'
-        }}>
+      <div className="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-sm p-3 border-t border-gray-200 dark:border-zinc-800">
+        <div className="flex items-center justify-center gap-2 flex-wrap">
           {/* Camera buttons */}
-          <div style={{ display: 'flex', gap: '6px' }}>
-            {['Sideline', 'Behind QB', 'Defense POV', 'Bird\'s Eye'].map((view, index) => (
-              <button
+          <div className="flex gap-1.5">
+            {['Sideline', 'Behind QB', 'Bird\'s Eye', 'Defense POV'].map((view, index) => {
+              const viewIndex = view === 'Bird\'s Eye' ? 3 : view === 'Defense POV' ? 2 : ['Sideline', 'Behind QB'].indexOf(view);
+              return (
+                <button
                 key={view}
-                onClick={() => moveCameraToPosition(index)}
+                onClick={() => moveCameraToPosition(viewIndex)}
                 disabled={isAnimating}
-                style={{ 
-                  padding: '6px 12px', 
-                  backgroundColor: '#374151',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: isAnimating ? 'not-allowed' : 'pointer',
-                  opacity: isAnimating ? 0.5 : 1,
-                  fontSize: '12px',
-                  fontWeight: '500',
-                }}
+                className={`px-3 py-1.5 bg-secondary text-secondary-foreground border-0 rounded text-xs font-medium transition-colors hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {view}
               </button>
-            ))}
+              )
+            })}
           </div>
           
-          <div style={{ width: '1px', height: '20px', backgroundColor: 'rgba(255, 255, 255, 0.2)' }} />
+          <div className="w-px h-5 bg-border" />
           
           {/* Team selection */}
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div className="flex gap-2 items-center">
             <select
               value={homeTeam.abbreviation}
               onChange={(e) => setHomeTeam(NFL_TEAMS.find(t => t.abbreviation === e.target.value)!)}
-              style={{
-                padding: '4px 8px',
-                backgroundColor: '#374151',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                fontSize: '12px',
-              }}
+              className="px-2 py-1 bg-secondary text-secondary-foreground border-0 rounded text-xs"
             >
               {NFL_TEAMS.map(team => (
                 <option key={team.abbreviation} value={team.abbreviation}>
@@ -281,14 +321,7 @@ export default function FieldViewer() {
             <select
               value={awayTeam.abbreviation}
               onChange={(e) => setAwayTeam(NFL_TEAMS.find(t => t.abbreviation === e.target.value)!)}
-              style={{
-                padding: '4px 8px',
-                backgroundColor: '#374151',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                fontSize: '12px',
-              }}
+              className="px-2 py-1 bg-secondary text-secondary-foreground border-0 rounded text-xs"
             >
               {NFL_TEAMS.map(team => (
                 <option key={team.abbreviation} value={team.abbreviation}>

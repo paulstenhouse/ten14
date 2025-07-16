@@ -10,7 +10,7 @@ interface FieldSurfaceProps {
 export default function FieldSurface({ homeTeam, awayTeam }: FieldSurfaceProps) {
   const surfaces = []
   const stripeWidth = 10 * YARD_TO_METER // 10 yard stripes
-  const darkGreen = "#1e3a1e"
+  const darkGreen = "#285028"  // Slightly darker than light green
   const lightGreen = "#2d5a2d"
   
   // Create alternating stripes for the main field (100 yards)
