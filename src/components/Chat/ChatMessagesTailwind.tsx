@@ -49,7 +49,7 @@ export default function ChatMessages({
               {message.content}
             </div>
             
-            {message.hasFieldDiagram && (
+            {message.simulation && (
               <>
                 <div
                   onClick={() => onToggleFieldDiagram(message.id)}
@@ -57,7 +57,7 @@ export default function ChatMessages({
                 >
                   <div className="mb-2">
                     <span className="text-sm font-semibold text-white">
-                      🏈 DeJean INT Return - 70 yards
+                      🏈 {message.simulation.displayTitle || 'NFL Play Visualization'}
                     </span>
                   </div>
                   <p className="text-xs text-white/90 leading-relaxed mb-3">
@@ -85,13 +85,6 @@ export default function ChatMessages({
                     </button>
                   </div>
                 </div>
-                
-                {/* Show play description when simulation is open */}
-                {fieldDiagramOpenForMessage === message.id && currentPlayDescription && (
-                  <div className="mt-2 p-3 bg-secondary/50 rounded-md border-l-4 border-red-600">
-                    <p className="text-sm">{currentPlayDescription}</p>
-                  </div>
-                )}
               </>
             )}
           </div>

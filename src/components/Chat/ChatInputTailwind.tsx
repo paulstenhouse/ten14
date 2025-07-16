@@ -9,6 +9,7 @@ interface ChatInputProps {
 
 export default function ChatInput({ onSendMessage, disabled = false }: ChatInputProps) {
   const [message, setMessage] = useState('')
+  const [isFocused, setIsFocused] = useState(false)
 
   const handleSend = () => {
     if (message.trim() && !disabled) {
@@ -31,9 +32,16 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           placeholder="Type your message..."
           disabled={disabled}
-          className="min-h-[44px] max-h-[120px] flex-1 resize-none rounded-lg border border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950 px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-gray-300 dark:focus:border-zinc-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`flex-1 resize-none rounded-lg border border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950 px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-gray-300 dark:focus:border-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-300 ease-in-out ${
+            isFocused ? 'min-h-[88px]' : 'min-h-[44px]'
+          } max-h-[120px]`}
+          style={{
+            height: isFocused ? '88px' : '44px'
+          }}
           rows={1}
         />
         <Button

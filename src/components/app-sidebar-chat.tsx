@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Plus } from "lucide-react"
-import { Conversation } from "@/types/chat"
+import { Thread } from "@/types/chat"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
@@ -16,16 +16,17 @@ import {
 } from "@/components/ui/sidebar"
 
 interface AppSidebarChatProps extends React.ComponentProps<typeof Sidebar> {
-  conversations: Conversation[]
+  threads: Thread[]
   selectedId: string | null
-  onSelectConversation: (id: string) => void
-  onNewConversation: () => void
+  onSelectThread: (id: string) => void
+  onNewThread: () => void
 }
 
 // Helper function to calculate time ago
-function getTimeAgo(date: Date): string {
+function getTimeAgo(date: string): string {
   const now = new Date()
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  const dateObj = new Date(date)
+  const seconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000)
   
   if (seconds < 60) return 'just now'
   const minutes = Math.floor(seconds / 60)
@@ -38,30 +39,30 @@ function getTimeAgo(date: Date): string {
   return `${weeks}w ago`
 }
 
-// Helper function to group conversations by time period
-function groupConversationsByTime(conversations: Conversation[]) {
+// Helper function to group threads by time period
+function groupThreadsByTime(threads: Thread[]) {
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000)
   const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
   
-  const groups: { [key: string]: Conversation[] } = {
+  const groups: { [key: string]: Thread[] } = {
     'Today': [],
     'Yesterday': [],
     'Last Week': [],
     'Earlier': []
   }
   
-  conversations.forEach(conv => {
-    const convDate = new Date(conv.updatedAt)
-    if (convDate >= today) {
-      groups['Today'].push(conv)
-    } else if (convDate >= yesterday) {
-      groups['Yesterday'].push(conv)
-    } else if (convDate >= lastWeek) {
-      groups['Last Week'].push(conv)
+  threads.forEach(thread => {
+    const threadDate = new Date(thread.updatedAt)
+    if (threadDate >= today) {
+      groups['Today'].push(thread)
+    } else if (threadDate >= yesterday) {
+      groups['Yesterday'].push(thread)
+    } else if (threadDate >= lastWeek) {
+      groups['Last Week'].push(thread)
     } else {
-      groups['Earlier'].push(conv)
+      groups['Earlier'].push(thread)
     }
   })
   
@@ -74,10 +75,10 @@ function groupConversationsByTime(conversations: Conversation[]) {
 }
 
 export function AppSidebarChat({ 
-  conversations,
+  threads,
   selectedId,
-  onSelectConversation,
-  onNewConversation,
+  onSelectThread,
+  onNewThread,
   ...props 
 }: AppSidebarChatProps) {
   const user = {
@@ -86,12 +87,15 @@ export function AppSidebarChat({
     avatar: undefined
   }
   
-  const groupedConversations = groupConversationsByTime(conversations)
+  const groupedThreads = groupThreadsByTime(threads)
 
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
-        <div className="flex flex-col items-start px-1 pt-2 mb-2">
+        <div 
+          className="flex flex-col items-start px-1 pt-2 mb-2 cursor-pointer"
+          onClick={() => onSelectThread('')}
+        >
           <img 
             src="https://sportgpt.pages.dev/assets/ten14logo-AuV9iT5b.png" 
             alt="Ten14 Logo" 
@@ -101,7 +105,7 @@ export function AppSidebarChat({
         </div>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={onNewConversation} className="w-full justify-start">
+            <SidebarMenuButton onClick={onNewThread} className="w-full justify-start">
               <Plus className="size-4" />
               <span>New Chat</span>
             </SidebarMenuButton>
@@ -109,26 +113,26 @@ export function AppSidebarChat({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {Object.entries(groupedConversations).map(([period, convs]) => (
+        {Object.entries(groupedThreads).map(([period, threadList]) => (
           <SidebarGroup key={period}>
             <SidebarGroupLabel className="px-4 text-xs font-medium text-muted-foreground">
               {period}
             </SidebarGroupLabel>
             <SidebarMenu className="gap-1">
-              {convs.map(conversation => (
-                <SidebarMenuItem key={conversation.id}>
+              {threadList.map(thread => (
+                <SidebarMenuItem key={thread.id}>
                   <SidebarMenuButton
-                    onClick={() => onSelectConversation(conversation.id)}
-                    isActive={selectedId === conversation.id}
-                    tooltip={conversation.title}
+                    onClick={() => onSelectThread(thread.id)}
+                    isActive={selectedId === thread.id}
+                    tooltip={thread.title}
                     className="w-full justify-start h-auto py-2 px-4"
                   >
                     <div className="flex items-center justify-between w-full gap-2">
                       <span className="truncate text-sm">
-                        {conversation.title}
+                        {thread.title}
                       </span>
                       <span className="text-xs text-muted-foreground shrink-0">
-                        {getTimeAgo(new Date(conversation.updatedAt))}
+                        {getTimeAgo(thread.updatedAt)}
                       </span>
                     </div>
                   </SidebarMenuButton>

@@ -9,4 +9,11 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    // Always serve index.html for any route (SPA routing)
+    middlewareMode: false,
+    fs: {
+      strict: false,
+    },
+  },
 })

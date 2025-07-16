@@ -30,7 +30,7 @@ export default function PlayTimeline({
   const progressPercentage = (currentTime / totalDuration) * 100
   
   return (
-    <div className={`bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg p-4 ${className}`}>
+    <div className={`bg-background/80 backdrop-blur-sm border border-border rounded-lg p-4 ${className}`}>
       {/* Play controls */}
       <div className="relative flex items-center justify-center mb-3">
         <button
@@ -62,41 +62,50 @@ export default function PlayTimeline({
       </div>
       
       <div className="relative">
-        {/* Timeline track */}
-        <div className="relative h-2 bg-white/20 rounded-full overflow-hidden">
-          {/* Progress bar */}
-          <div 
-            className={`absolute left-0 top-0 h-full bg-primary ${isPlaying ? 'transition-[width] duration-300 ease-linear' : ''}`}
-            style={{ width: `${progressPercentage}%` }}
-          />
+        {/* Timeline container */}
+        <div className="relative h-2">
+          {/* Background track */}
+          <div className="absolute inset-0 bg-black/20 dark:bg-white/20 rounded-full" />
           
-          {/* Frame markers - positioned on top of progress */}
-          {frames.map((frame, index) => {
-            const position = (frame.frame_time_seconds / totalDuration) * 100
-            const isActive = currentTime >= frame.frame_time_seconds
-            const isHovered = hoveredTime === frame.frame_time_seconds
-            
-            return (
-              <button
-                key={index}
-                className={`absolute top-1/2 w-4 h-4 rounded-full border-2 transition-all cursor-pointer
-                  ${isActive ? 'bg-primary border-primary' : 'bg-black border-white/40'}
-                  ${isHovered ? 'scale-150' : 'scale-100'}
-                  hover:scale-150 hover:border-white`}
-                style={{ 
-                  left: `${position}%`, 
-                  transform: 'translate(-50%, -50%)'
-                }}
-                onClick={() => onTimeSelect(frame.frame_time_seconds)}
-                onMouseEnter={() => setHoveredTime(frame.frame_time_seconds)}
-                onMouseLeave={() => setHoveredTime(null)}
-              />
-            )
-          })}
+          {/* Progress fill */}
+          <div className="absolute inset-0 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-primary transition-none"
+              style={{ 
+                width: `${progressPercentage}%`
+              }}
+            />
+          </div>
+          
+          {/* Frame markers - positioned above the track */}
+          <div className="absolute inset-0">
+            {frames.map((frame, index) => {
+              const position = (frame.frame_time_seconds / totalDuration) * 100
+              const isActive = currentTime >= frame.frame_time_seconds
+              const isHovered = hoveredTime === frame.frame_time_seconds
+              
+              return (
+                <button
+                  key={index}
+                  className={`absolute top-1/2 w-4 h-4 rounded-full border-2 transition-all cursor-pointer z-10
+                    ${isActive ? 'bg-primary border-primary' : 'bg-background border-muted-foreground'}
+                    ${isHovered ? 'scale-150' : 'scale-100'}
+                    hover:scale-150 hover:border-primary`}
+                  style={{ 
+                    left: `${position}%`, 
+                    transform: 'translate(-50%, -50%)'
+                  }}
+                  onClick={() => onTimeSelect(frame.frame_time_seconds)}
+                  onMouseEnter={() => setHoveredTime(frame.frame_time_seconds)}
+                  onMouseLeave={() => setHoveredTime(null)}
+                />
+              )
+            })}
+          </div>
           
           {/* Current time indicator */}
           <div 
-            className="absolute top-1/2 w-3 h-3 bg-white rounded-full shadow-lg pointer-events-none"
+            className="absolute top-1/2 w-3 h-3 bg-foreground rounded-full shadow-lg pointer-events-none z-20 transition-none"
             style={{ 
               left: `${progressPercentage}%`, 
               transform: 'translate(-50%, -50%)'
@@ -105,13 +114,13 @@ export default function PlayTimeline({
         </div>
         
         {/* Time labels */}
-        <div className="relative mt-2 text-xs text-white/60" style={{ height: '20px' }}>
+        <div className="relative mt-2 text-xs text-muted-foreground" style={{ height: '20px' }}>
           {frames.map((frame, index) => {
             const position = (frame.frame_time_seconds / totalDuration) * 100
             return (
               <button
                 key={index}
-                className={`absolute transition-colors cursor-pointer hover:text-white
+                className={`absolute transition-colors cursor-pointer hover:text-foreground
                   ${Math.abs(currentTime - frame.frame_time_seconds) < 0.1 ? 'text-primary font-bold' : ''}`}
                 style={{ 
                   left: `${position}%`, 
@@ -127,7 +136,7 @@ export default function PlayTimeline({
         </div>
         
         {/* Play description - single line */}
-        <div className="mt-2 text-xs text-white/70 text-center truncate">
+        <div className="mt-2 text-xs text-muted-foreground text-center truncate">
           {(() => {
             // Find the current frame description
             const currentFrame = deJeanInterceptionPlay.plays.find((play, index) => {
