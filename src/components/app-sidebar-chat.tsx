@@ -42,13 +42,28 @@ function getTimeAgo(date: string): string {
   const minutes = Math.floor(seconds / 60)
   if (minutes < 60) return `${minutes}m ago`
   const hours = Math.floor(minutes / 60)
+  
+  // Check if it's actually yesterday (same calendar day as yesterday) first
+  const currentDate = new Date()
+  const today = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate())
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000)
+  const threadDay = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate())
+  
+  if (threadDay.getTime() === yesterday.getTime()) {
+    // Yesterday - show time
+    return dateObj.toLocaleTimeString(undefined, { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    })
+  }
+  
+  // If it's today and less than 24 hours, show hours ago
   if (hours < 24) return `${hours}h ago`
   
   const days = Math.floor(hours / 24)
-  if (days === 1) {
-    // Yesterday - show hours
-    return `${hours}h ago`
-  } else if (days < 7) {
+  
+  if (days < 7) {
     // Within a week - show date in user's locale format (M/D or D/M)
     return dateObj.toLocaleDateString(undefined, { 
       month: 'numeric', 
@@ -127,7 +142,7 @@ export function AppSidebarChat({
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
         <div 
-          className="flex flex-col items-start px-1 pt-2 mb-2 cursor-pointer"
+          className="flex flex-col items-start px-1 pt-2 mb-2 pb-4 cursor-pointer"
           onClick={() => onSelectThread('')}
         >
           <img 
@@ -139,7 +154,7 @@ export function AppSidebarChat({
         </div>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={onNewThread} className="w-full justify-start">
+            <SidebarMenuButton onClick={onNewThread} className="w-full justify-start border border-border/50 hover:border-border">
               <Plus className="size-4" />
               <span>New Chat</span>
             </SidebarMenuButton>

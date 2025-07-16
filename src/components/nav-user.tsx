@@ -75,7 +75,7 @@ export function NavUser({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {/* Token usage progress - independent */}
       <div className="px-2">
         <div className="flex items-center justify-between mb-1">

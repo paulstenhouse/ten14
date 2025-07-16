@@ -32,13 +32,27 @@ function ChatInterfaceContent() {
     const now = new Date()
     const threads: Thread[] = []
     
-    // Yesterday's threads (within 24-48 hours ago)
+    // Yesterday's threads (from yesterday's calendar day)
+    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
+    
+    // Order by most recent first
+    threads.push({
+      id: '550e8400-e29b-41d4-a716-446655440003',
+      title: 'Defense Formation Setup',
+      createdAt: new Date(yesterday.getTime() + 21.5 * 60 * 60 * 1000).toISOString(), // Yesterday 9:30 PM
+      updatedAt: new Date(yesterday.getTime() + 21.5 * 60 * 60 * 1000).toISOString(),
+      metadata: {
+        tags: ['defense', 'formation', 'strategy'],
+        sport: 'nfl'
+      }
+    })
+    
     threads.push({
       id: '550e8400-e29b-41d4-a716-446655440001',
       title: 'DeJean Interception Analysis',
-      createdAt: new Date(now.getTime() - 30 * 60 * 60 * 1000).toISOString(), // 30h ago
-      updatedAt: new Date(now.getTime() - 30 * 60 * 60 * 1000).toISOString(),
-      lastMessageAt: new Date(now.getTime() - 30 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(yesterday.getTime() + 19 * 60 * 60 * 1000).toISOString(), // Yesterday 7:00 PM
+      updatedAt: new Date(yesterday.getTime() + 19 * 60 * 60 * 1000).toISOString(),
+      lastMessageAt: new Date(yesterday.getTime() + 19 * 60 * 60 * 1000).toISOString(),
       metadata: {
         tags: ['interception', 'eagles', 'chiefs'],
         sport: 'nfl',
@@ -47,33 +61,10 @@ function ChatInterfaceContent() {
     })
     
     threads.push({
-      id: '550e8400-e29b-41d4-a716-446655440002',
-      title: 'Chiefs Red Zone Offense',
-      createdAt: new Date(now.getTime() - 35 * 60 * 60 * 1000).toISOString(), // 35h ago
-      updatedAt: new Date(now.getTime() - 35 * 60 * 60 * 1000).toISOString(),
-      metadata: {
-        tags: ['offense', 'red-zone', 'chiefs'],
-        sport: 'nfl',
-        teams: ['KC']
-      }
-    })
-    
-    threads.push({
-      id: '550e8400-e29b-41d4-a716-446655440003',
-      title: 'Defense Formation Setup',
-      createdAt: new Date(now.getTime() - 40 * 60 * 60 * 1000).toISOString(), // 40h ago
-      updatedAt: new Date(now.getTime() - 40 * 60 * 60 * 1000).toISOString(),
-      metadata: {
-        tags: ['defense', 'formation', 'strategy'],
-        sport: 'nfl'
-      }
-    })
-    
-    threads.push({
       id: '550e8400-e29b-41d4-a716-446655440004',
       title: 'Eagles Coverage Schemes',
-      createdAt: new Date(now.getTime() - 45 * 60 * 60 * 1000).toISOString(), // 45h ago
-      updatedAt: new Date(now.getTime() - 45 * 60 * 60 * 1000).toISOString(),
+      createdAt: new Date(yesterday.getTime() + 16.5 * 60 * 60 * 1000).toISOString(), // Yesterday 4:30 PM
+      updatedAt: new Date(yesterday.getTime() + 16.5 * 60 * 60 * 1000).toISOString(),
       metadata: {
         tags: ['coverage', 'defense', 'eagles'],
         sport: 'nfl',
@@ -81,7 +72,19 @@ function ChatInterfaceContent() {
       }
     })
     
-    // Last week's threads (3-7 days ago)
+    threads.push({
+      id: '550e8400-e29b-41d4-a716-446655440002',
+      title: 'Chiefs Red Zone Offense',
+      createdAt: new Date(yesterday.getTime() + 14.5 * 60 * 60 * 1000).toISOString(), // Yesterday 2:30 PM
+      updatedAt: new Date(yesterday.getTime() + 14.5 * 60 * 60 * 1000).toISOString(),
+      metadata: {
+        tags: ['offense', 'red-zone', 'chiefs'],
+        sport: 'nfl',
+        teams: ['KC']
+      }
+    })
+    
+    // Last week's threads (3-7 days ago) - most recent first
     threads.push({
       id: '550e8400-e29b-41d4-a716-446655440005',
       title: 'Quarterback Positioning',
