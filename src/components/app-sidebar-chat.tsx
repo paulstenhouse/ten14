@@ -1,7 +1,16 @@
 import * as React from "react"
-import { Plus } from "lucide-react"
+import { Plus, Trash2 } from "lucide-react"
 import { Thread } from "@/types/chat"
 import { NavUser } from "@/components/nav-user"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +29,7 @@ interface AppSidebarChatProps extends React.ComponentProps<typeof Sidebar> {
   selectedId: string | null
   onSelectThread: (id: string) => void
   onNewThread: () => void
+  onDeleteThread?: (id: string) => void
 }
 
 // Helper function to calculate time ago
@@ -33,10 +43,31 @@ function getTimeAgo(date: string): string {
   if (minutes < 60) return `${minutes}m ago`
   const hours = Math.floor(minutes / 60)
   if (hours < 24) return `${hours}h ago`
+  
   const days = Math.floor(hours / 24)
-  if (days < 7) return `${days}d ago`
-  const weeks = Math.floor(days / 7)
-  return `${weeks}w ago`
+  if (days === 1) {
+    // Yesterday - show hours
+    return `${hours}h ago`
+  } else if (days < 7) {
+    // Within a week - show date in user's locale format
+    return dateObj.toLocaleDateString(undefined, { 
+      month: 'numeric', 
+      day: 'numeric' 
+    })
+  } else if (days < 365) {
+    // Within a year - show date without year
+    return dateObj.toLocaleDateString(undefined, { 
+      month: 'short', 
+      day: 'numeric' 
+    })
+  } else {
+    // Over a year - show full date
+    return dateObj.toLocaleDateString(undefined, { 
+      year: 'numeric',
+      month: 'short', 
+      day: 'numeric' 
+    })
+  }
 }
 
 // Helper function to group threads by time period
@@ -79,8 +110,11 @@ export function AppSidebarChat({
   selectedId,
   onSelectThread,
   onNewThread,
+  onDeleteThread,
   ...props 
 }: AppSidebarChatProps) {
+  const [hoveredThreadId, setHoveredThreadId] = React.useState<string | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = React.useState<string | null>(null)
   const user = {
     name: "John Smith",
     email: "john.smith@example.com",
@@ -120,20 +154,38 @@ export function AppSidebarChat({
             </SidebarGroupLabel>
             <SidebarMenu className="gap-1">
               {threadList.map(thread => (
-                <SidebarMenuItem key={thread.id}>
+                <SidebarMenuItem 
+                  key={thread.id}
+                  onMouseEnter={() => setHoveredThreadId(thread.id)}
+                  onMouseLeave={() => setHoveredThreadId(null)}
+                >
                   <SidebarMenuButton
                     onClick={() => onSelectThread(thread.id)}
                     isActive={selectedId === thread.id}
                     tooltip={thread.title}
-                    className="w-full justify-start h-auto py-2 px-4"
+                    className="w-full justify-start h-auto py-2 px-4 pr-2"
                   >
                     <div className="flex items-center justify-between w-full gap-2">
-                      <span className="truncate text-sm">
+                      <span className="truncate text-sm flex-1">
                         {thread.title}
                       </span>
-                      <span className="text-xs text-muted-foreground shrink-0">
-                        {getTimeAgo(thread.updatedAt)}
-                      </span>
+                      <div className="flex items-center gap-1">
+                        {hoveredThreadId === thread.id && onDeleteThread ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setDeleteConfirmId(thread.id)
+                            }}
+                            className="p-1 rounded hover:bg-sidebar-accent transition-colors"
+                          >
+                            <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                          </button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground shrink-0">
+                            {getTimeAgo(thread.updatedAt)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -146,6 +198,36 @@ export function AppSidebarChat({
         <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
+      
+      <Dialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Thread</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this thread? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteConfirmId(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (deleteConfirmId && onDeleteThread) {
+                  onDeleteThread(deleteConfirmId)
+                  setDeleteConfirmId(null)
+                }
+              }}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Sidebar>
   )
 }

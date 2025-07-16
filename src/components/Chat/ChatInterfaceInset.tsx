@@ -437,6 +437,22 @@ function ChatInterfaceContent() {
     setFieldDiagramOpenForMessage(null)
   }
 
+  const handleDeleteThread = (id: string) => {
+    // Remove thread from list
+    setThreads(threads.filter(t => t.id !== id))
+    
+    // Remove associated messages
+    const newMessages = new Map(messages)
+    newMessages.delete(id)
+    setMessages(newMessages)
+    
+    // If deleting the current thread, navigate to home
+    if (selectedThreadId === id) {
+      setSelectedThreadId(null)
+      navigate('/')
+    }
+  }
+
   return (
     <>
       <AppSidebarChat 
@@ -444,6 +460,7 @@ function ChatInterfaceContent() {
         selectedId={selectedThreadId}
         onSelectThread={handleSelectThread}
         onNewThread={handleNewThread}
+        onDeleteThread={handleDeleteThread}
         className={isMobile ? 'z-40' : ''}
       />
       <SidebarInset className="overflow-hidden" ref={mainAreaRef}>

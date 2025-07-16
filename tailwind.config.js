@@ -59,21 +59,6 @@ export default {
   				ring: 'hsl(var(--sidebar-ring))'
   			}
   		},
-  		animation: {
-  			in: 'in 0.2s ease-out'
-  		},
-  		keyframes: {
-  			in: {
-  				'0%': {
-  					opacity: 0,
-  					transform: 'translateX(-100%)'
-  				},
-  				'100%': {
-  					opacity: 1,
-  					transform: 'translateX(0)'
-  				}
-  			}
-  		}
   	}
   },
   plugins: [],
