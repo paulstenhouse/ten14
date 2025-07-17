@@ -39,5 +39,4 @@ jobs:
           projectName: field
           directory: dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          deployment-environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
           branch: ${{ github.ref == 'refs/heads/main' && 'main' || 'dev' }}
