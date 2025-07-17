@@ -29,3 +29,6 @@ lerna-debug.log*
 
 # OS generated files
 Thumbs.db
+
+# Cloudflare
+.wrangler/
